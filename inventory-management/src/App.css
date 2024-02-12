@@ -1,0 +1,17 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+ 
+
+.wdt{
+    width:1800px;
+ 
+}
+.pro{
+    padding-top: 20px;
+    font-size: 20px;
+}
+main{
+    overflow: hidden !important;
+}
