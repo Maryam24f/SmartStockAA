@@ -2,27 +2,31 @@ import "../App.css";
 import { TbMoodEmptyFilled } from "react-icons/tb";
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import Chart from "chart.js/auto";
+import { useAuth } from "./AuthContext";
+import axios from "axios";
 
-const sampleData = [
-  { branch: "ISE", date: "2023-01-15", assetType: "Paper", quantity: 200 },
-  { branch: "ISE", date: "2023-01-20", assetType: "Ink", quantity: 150 },
-  { branch: "ISE", date: "2023-02-20", assetType: "Ink", quantity: 130 },
-  { branch: "ISE", date: "2023-03-20", assetType: "Ink", quantity: 110 },
-  { branch: "ISE", date: "2023-04-20", assetType: "Ink", quantity: 90 },
-  { branch: "ISE", date: "2023-01-20", assetType: "Tissues", quantity: 85 },
-  { branch: "ISE", date: "2023-01-20", assetType: "Tea", quantity: 65 },
-  { branch: "ISE", date: "2023-01-20", assetType: "Milk", quantity: 25 },
-  { branch: "ISE", date: "2023-01-20", assetType: "pens", quantity: 55 },
-  { branch: "ISE", date: "2023-02-05", assetType: "Paper", quantity: 140 },
-  { branch: "ISE", date: "2023-02-20", assetType: "pens", quantity: 20},
-  { branch: "ISE", date: "2023-03-05", assetType: "Paper", quantity: 90 },
-  { branch: "ISE", date: "2023-04-05", assetType: "Paper", quantity: 60 },
-  { branch: "ISE", date: "2023-05-05", assjetType:"Paper", quantity: 40 },
-];
+// const sampleData = [
+//   { branch: "ISE", date: "2023-01-15", assetType: "Paper", quantity: 200 },
+//   { branch: "ISE", date: "2023-01-20", assetType: "Ink", quantity: 150 },
+//   { branch: "ISE", date: "2023-02-20", assetType: "Ink", quantity: 130 },
+//   { branch: "ISE", date: "2023-03-20", assetType: "Ink", quantity: 110 },
+//   { branch: "ISE", date: "2023-04-20", assetType: "Ink", quantity: 90 },
+//   { branch: "ISE", date: "2023-01-20", assetType: "Tissues", quantity: 85 },
+//   { branch: "ISE", date: "2023-01-20", assetType: "Tea", quantity: 65 },
+//   { branch: "ISE", date: "2023-01-20", assetType: "Milk", quantity: 25 },
+//   { branch: "ISE", date: "2023-01-20", assetType: "pens", quantity: 55 },
+//   { branch: "ISE", date: "2023-02-05", assetType: "Paper", quantity: 140 },
+//   { branch: "ISE", date: "2023-02-20", assetType: "pens", quantity: 20},
+//   { branch: "ISE", date: "2023-03-05", assetType: "Paper", quantity: 90 },
+//   { branch: "ISE", date: "2023-04-05", assetType: "Paper", quantity: 60 },
+//   { branch: "ISE", date: "2023-05-05", assjetType:"Paper", quantity: 40 },
+// ];
 
-const fixedBranch = "ISE"; // Fix the branch value
+
 
 function Graph() {
+  const { userBranch } = useAuth();
+  const fixedBranch = userBranch; // Fix the branch value
   const [selectedMonthYear, setSelectedMonthYear] = useState("");
   const [consumableData, setConsumableData] = useState({});
   const hasMounted = useRef(false);
@@ -30,7 +34,21 @@ function Graph() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [isGraphVisible, setIsGraphVisible] = useState(false);
+  const [sampleData, setSampledata] = useState([]);
 
+  useEffect(()=>{
+    fetchData()
+  },[]);
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/clist/${fixedBranch}`);
+      const data = response.data;
+      setSampledata(data);
+      console.log(sampleData)
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
   useLayoutEffect(() => {
     // Initialize the bar graph when the component mounts
     renderBarGraph();

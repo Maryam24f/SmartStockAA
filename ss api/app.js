@@ -9,6 +9,7 @@ var usersRouter = require('./app-server/routes/users');
 var assetRouter = require('./app-server/routes/asset');
 var branchrouter = require('./app-server/routes/branch');
 var authRoutes = require('./app-server/routes/auth');
+var clistRoutes = require('./app-server/routes/clist');
 var bodyParser= require('body-parser');
 const mongoose = require('mongoose');
 
@@ -49,6 +50,7 @@ app.use('/users', usersRouter);
 app.use('/assets', assetRouter); // Use '/assets' as the base path for asset routes
 app.use('/branches', branchrouter);
 app.use('/auth', authRoutes);
+app.use('/clist', clistRoutes);
 
 
 

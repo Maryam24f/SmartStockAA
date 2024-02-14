@@ -23,7 +23,7 @@ function Uassets() {
               {/* Fix Assets */}
               <div
                 className="p-1 w-full h-1/4  rounded-xl sm:flex border border-gray-200 bg-white bg-opacity-50 shadow-xl hover:rounded-2xl lg:transform md:transform transition-transform hover:scale-95"
-                onClick={() => handleDivClick({category:'Fix Assets', assetname:'Chair',assettag:'05000987', type:'Furniture', specs:'wooden chair', status:'Not Allocated'})}
+                onClick={() => handleDivClick({category:'fix'})}
               >
                 <div className="sm:w-7/12 pl-0 p-1 whitespace-nowrap">
                   <div className="space-y-0">
@@ -35,7 +35,7 @@ function Uassets() {
               {/* Consumable Assets */}
               <div
                 className="p-1 w-full h-1/4  rounded-xl sm:flex border border-gray-200 bg-white bg-opacity-50 shadow-xl hover:rounded-2xl lg:transform md:transform transition-transform hover:scale-95"
-                onClick={() => handleDivClick({category:'Consumable Assets', assetname:'papers',quantity:'2', type:'Papers', specs:'A4', status:'Allocated'})}
+                onClick={() => handleDivClick({category:'consumable'})}
               >
                 <div className="sm:w-7/12 pl-0 p-1 whitespace-nowrap">
                   <div className="space-y-0">
@@ -48,7 +48,7 @@ function Uassets() {
               {/* IT Assets */}
               <div
                 className="p-1 w-full h-1/4  rounded-xl sm:flex border border-gray-200 bg-white bg-opacity-50 shadow-xl hover:rounded-2xl lg:transform md:transform transition-transform hover:scale-95"
-                onClick={() => handleDivClick({category:'IT Assets', assetname:'Hard Disk',assettag:'05000987', type:'Storage Disk', specs:'100Gb', status:'Not Allocated'})}
+                onClick={() => handleDivClick({category:'IT'})}
               >
                 <div className="sm:w-7/12 pl-0 p-1 whitespace-nowrap">
                   <div className="space-y-0">

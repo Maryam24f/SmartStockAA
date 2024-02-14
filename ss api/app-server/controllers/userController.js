@@ -63,7 +63,7 @@ const getUserRoleByUsername = async (req, res, next) => {
         return res.status(404).json({ message: 'User not found' });
       }
       // If user is found, send back their role
-      res.json({ role: user.role });
+      res.json({ role: user.role, branch: user.branch });
     } catch (error) {
       console.error('Error fetching user role:', error);
       res.status(500).json({ message: 'Internal server error' });

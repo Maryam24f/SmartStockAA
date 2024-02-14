@@ -5,11 +5,14 @@ const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [userRole, setUserRole] = useState('');
+  const [userBranch, setUserBranch] = useState('');
 
   useEffect(() => {
     const storedUserRole = localStorage.getItem('userRole');
-    if (storedUserRole) {
+    const storedUserBranch = localStorage.getItem('userBranch')
+    if (storedUserRole && storedUserBranch) {
       setUserRole(storedUserRole);
+      setUserBranch(storedUserBranch)
     }
   }, []);
 
@@ -19,8 +22,7 @@ const AuthProvider = ({ children }) => {
     try {
       // Make an API call to authenticate the user
       const response = await axios.post('http://localhost:8000/auth/login', { username, password });
-      const { token } = response.data;
-  
+      const { token } = response.data;  
       // Save the authentication token to local storage
       localStorage.setItem('authToken', token);
   
@@ -31,10 +33,13 @@ const AuthProvider = ({ children }) => {
         }
       });
       const role = roleResponse.data.role;
-  
+      const branch = roleResponse.data.branch;
+      console.log("branch: "+ branch)
       // Update user role in state and localStorage
       setUserRole(role);
+      setUserBranch(branch);
       localStorage.setItem('userRole', role);
+      localStorage.setItem('userBranch', branch);
     } catch (error) {
       // Handle authentication error
       console.error('Error logging in:', error);
@@ -52,7 +57,7 @@ const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ userRole, isAdmin, login, logout }}>
+    <AuthContext.Provider value={{ userRole, isAdmin, login, logout, userBranch }}>
       {children}
     </AuthContext.Provider>
   );

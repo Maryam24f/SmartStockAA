@@ -2,7 +2,9 @@ import React, { useState, useEffect,useRef, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Us from "./Umain";
 import Graph from "./graph";
-import Chart from "chart.js/auto";
+import Chart from "chart.js/auto"; 
+import { useAuth } from "./AuthContext";
+import axios from "axios";
 function Ureport() {
   const navigate = useNavigate();
   const [isModalOpen, setModalOpen] = useState(false);
@@ -11,41 +13,26 @@ function Ureport() {
   const [selectedMonthDetails, setSelectedMonthDetails] = useState(null);
   const [activeTab, setActiveTab] = useState("requests"); // State to track active tab
   const [selectedRow, setSelectedRow] = useState(null); // State to track selected row for modal
-  const [Rlist, setRlist] = useState([
-    {
-      id: 0,
-      branch: "ISE", // Branch Name
-      ACategory: "IT", // Asset Category
-      Aname: "Papers", // Asset Type
-      au:"rim",
-      month: "2024-01-23", // Date
-      quantity: "50", 
-      amount:"145",// Cost
-      status:"Accepted"
-    },
-    {
-      id: 1,
-      branch: "ISE", // Branch Name
-      ACategory: "consuamble", // Asset Category
-      Aname: "Milk", // Asset Type
-      au:"rim",
-      month: "2024-01-23", // Date
-      quantity: "50", 
-      amount:"145",// Cost
-      status:"Accepted"
-    },
-    {
-      id: 0,
-      branch: "ISE", // Branch Name
-      ACategory: "IT", // Asset Category
-      Aname: "Tea", // Asset Type
-      au:"rim",
-      month: "2024-01-23", // Date
-      quantity: "50", 
-      amount:"145",// Cost
-      status:"Accepted"
-    },
-  ]);
+  const [Rlist, setRlist] = useState([]);
+  const { userBranch } = useAuth();
+  useEffect(() => {
+    // Fetch data from backend API when the component mounts
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/clist'); // Adjust the URL based on your backend setup
+      if (response.ok) {
+        const data = await response.json();
+        setRlist(data); // Update state with fetched data
+      } else {
+        console.error('Failed to fetch data');
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const [formData, setFormData] = useState({
     branch: "", // Branch Name
@@ -78,28 +65,46 @@ function Ureport() {
     setRlist(updatedRow);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit =async (e) => {
     e.preventDefault();
-    //handleOpenClick();
-    const newdataId = Rlist.length + 1;
-    const newdata = { id: newdataId, ...formData, branch: 'ISE', Aname:(selectedItem || otherItem)  };
-    setRlist([ newdata,...Rlist]);
-    setFormData({
-    branch: "", // Branch Name
-    Aname: "", // Asset Type
-    month: "", // Date
-    au:"",
-    quantity: "", // Cost
-    amount:""
-    });
-    setSelectedItem("")
-    setOtherItem("")
-    closeModal();
+    const newdata = { ...formData, branch: userBranch, Aname:(selectedItem==="Other" ? otherItem :selectedItem)  };
+    e.preventDefault();
+    console.log(formData)
+    try {
+      await axios.post("http://localhost:8000/clist", newdata);
+      setFormData({
+        branch: "", // Branch Name
+        Aname: "", // Asset Type
+        month: "", // Date
+        au:"",
+        quantity: "", // Cost
+        amount:""
+        });
+      fetchData(); // Refetch branches after adding new branch
+      setSelectedItem("")
+      setOtherItem("")
+      closeModal();
+      
+    } catch (error) {
+      console.error("Error adding branch:", error);
+    }
+    // setRlist([ newdata,...Rlist]);
+    // setFormData({
+    // branch: "", // Branch Name
+    // Aname: "", // Asset Type
+    // month: "", // Date
+    // au:"",
+    // quantity: "", // Cost
+    // amount:""
+    // });
+    // setSelectedItem("")
+    // setOtherItem("")
+    // closeModal();
   };
 
   const handleCancelUpdate = () => {
     setFormData({
-      branch: "", // Branch Name
+    branch: "", // Branch Name
     Aname: "", // Asset Type
     month: "", // Date
     au:"",
@@ -115,24 +120,7 @@ function Ureport() {
       [name]: value,
     }));
   };
-  /////search/////
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-  };
-  const filteredData = Rlist.filter((M) => {
-    const searchFields = [
-      M.Aname,
-      M.branch,
-      M.au,
-      M.quantity,
-      M.amount,
-      M.month
-    ]
-    return searchFields.some((field) => {
-      // Check if the field is defined before calling toLowerCase()
-      return field && field.toLowerCase().includes(searchQuery.toLowerCase());
-    });
-  });
+
 
   const handleSubmitForm = (e) => {
     e.preventDefault();
@@ -378,14 +366,29 @@ function Ureport() {
   };
 
   function requests() {
-    // Create a Set to keep track of unique months
-    const uniqueMonths = new Set();
+    
   
-    // Populate the Set with unique months
-    Rlist.forEach((row) => {
-      uniqueMonths.add(row.month);
-      
-    });
+      /////search/////
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+};
+
+const filteredData = Rlist.filter((M) => {
+const searchFields = [
+M.month
+]
+return searchFields.some((field) => {
+if (typeof field === 'string') {
+return field.toLowerCase().includes(searchQuery.toLowerCase());
+}
+return false; // Return false for non-string fields
+});
+});
+
+  // Create a Set to keep track of unique months from the filtered data
+  const uniqueMonths = new Set(filteredData.map((item) => item.month));
+
+    
     // Function to get the status for a given month
   const getStatusForMonth = (month) => {
     // Find the row in Rlist corresponding to the given month
@@ -442,11 +445,10 @@ function Ureport() {
                      })()}`}
                   >
                     {getStatusForMonth(month)}
-                  </div>
-                
+                  </div>               
               </td>
-              </tr>
-            ))}
+            </tr>
+          ))}
           </tbody>
         </table>
       </div>

@@ -41,6 +41,7 @@ const createBranch = async (req, res) =>{
       res.status(500).json({ error: error.message });
     }
   };
+
   
   // Delete a branch
 const deleteBranch = async (req, res) => {
@@ -54,4 +55,4 @@ const deleteBranch = async (req, res) => {
 };
 
 
-  module.exports = { createBranch, getBranches, getAssetsByBranchAndCategory, deleteBranch}
+  module.exports = {createBranch, getBranches, getAssetsByBranchAndCategory, deleteBranch}

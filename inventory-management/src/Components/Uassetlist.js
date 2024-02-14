@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import SideBar from "./main";
 import Profile from "./profile";
 import UassetModal from "./Uassetmodal";
 import AssetAllocationModal from "./AssetAllocationModal";
 import Us from './Umain'
+import axios from 'axios';
+import { useAuth } from "./AuthContext";
 function UassetsList() {
+  // Access userBranch from the AuthContext
+  const { userBranch } = useAuth();
   // Use the useLocation hook to get the current location
   const location = useLocation();
 
@@ -25,118 +29,29 @@ function UassetsList() {
   const cat = props.category;
   console.log("Category value:", cat);
   // State to manage the list of assets
-  const [assets, setAssets] = useState([
-    {
-      id: 0,
-      status: props.status,
-      assetname: props.assetname,
-      assetTag: props.assettag,
-      quantity:props.quantity,
-      details: props.specs,
-      type: props.type,
-      branch: "warehouse I9",
-    },
-    {
-      id: 1,
-      status: props.status,
-      assetname: props.assetname,
-      assetTag: props.assettag,
-      quantity:props.quantity,
-      details: props.specs,
-      type: props.type,
-      branch: "warehouse I9",
-    },
-    {
-      id: 2,
-      status: props.status,
-      assetname: props.assetname,
-      assetTag: props.assettag,
-      quantity:props.quantity,
-      details: props.specs,
-      type: props.type,
-      branch: "warehouse I9",
-    },
-    {
-      id: 3,
-      status: props.status,
-      assetname: props.assetname,
-      assetTag: props.assettag,
-      quantity:props.quantity,
-      details: props.specs,
-      type: props.type,
-      branch: "warehouse I9",
-    },
-    {
-      id: 4,
-      status: props.status,
-      assetname: props.assetname,
-      assetTag: props.assettag,
-      quantity:props.quantity,
-      details: props.specs,
-      type: props.type,
-      branch: "warehouse I9",
-    },
-    {
-      id: 5,
-      status: props.status,
-      assetname: "table",
-      assetTag: props.assettag,
-      quantity:props.quantity,
-      details: props.specs,
-      type: 'table',
-      branch: "warehouse I9",
-    },
-    {
-      id: 6,
-      status: props.status,
-      assetname: "table",
-      assetTag: props.assettag,
-      quantity:props.quantity,
-      details: props.specs,
-      type: 'table',
-      branch: "warehouse I9",
-    },
-    {
-      id: 7,
-      status: props.status,
-      assetname: "table",
-      assetTag: props.assettag,
-      quantity:props.quantity,
-      details: props.specs,
-      type: "table",
-      branch: "warehouse I9",
-    },
-    {
-      id: 8,
-      status: props.status,
-      assetname: "Milk",
-      assetTag: props.assettag,
-      quantity:props.quantity,
-      details: props.specs,
-      type:'Milk',
-      branch: "warehouse I9",
-    },
-    {
-      id: 9,
-      status: props.status,
-      assetname: "Milk",
-      assetTag: props.assettag,
-      quantity:props.quantity,
-      details: props.specs,
-      type: 'Milk',
-      branch: "warehouse I9",
-    },
-    {
-      id: 10,
-      status: props.status,
-      assetname: "Milk",
-      assetTag: props.assettag,
-      quantity:props.quantity,
-      details: props.specs,
-      type: 'Milk',
-      branch: "warehouse I9",
-    },
-  ]);
+  const [assets, setAssets] = useState([]);
+
+  useEffect(() => {
+    console.log("user: "+userBranch +"cat:"+ cat)
+    const fetchAssets = async () => {
+      
+      try {
+        if (userBranch && cat) {
+          // Make an API call to fetch assets based on userBranch and category
+          const response = await axios.get(`http://localhost:8000/branches/${userBranch}/${cat}`);
+          setAssets(response.data);
+          console.log("response:" + assets)
+        }
+      } catch (error) {
+        console.error('Error fetching assets:', error);
+      }
+    };
+  
+    if (userBranch && cat) {
+      fetchAssets();
+    }
+  }, []);
+  
   // State to manage the dropdown state for each row
   const [dropdownStates, setDropdownStates] = useState(assets.map(() => false));
   const [selectedAllocation, setSelectedAllocation] =
@@ -145,8 +60,8 @@ function UassetsList() {
   // State to manage form input values
   const [formData, setFormData] = useState({
     status: "Not Allocated",
-    assetname: "",
-    assetTag: "",
+    name: "",
+    tag: "",
     quantity:"",
     details: "",
     type: "",
@@ -162,8 +77,8 @@ function UassetsList() {
   const openAddModal = () => {
     setFormData({
       status: "Not Allocated",
-      assetname: "",
-      assetTag: "",
+      name: "",
+      tag: "",
       quantity:"",
       details: "",
       type: "",
@@ -177,8 +92,8 @@ function UassetsList() {
     const selectedAsset = assets.find((asset) => asset.id === assetId);
     setFormData({
       status: selectedAsset.status,
-      assetname: selectedAsset.assetname,
-      assetTag: selectedAsset.assetTag,
+      name: selectedAsset.name,
+      tag: selectedAsset.assetTag,
       quantity:selectedAsset.quantity,
       details: selectedAsset.details,
       type: selectedAsset.type,
@@ -267,8 +182,8 @@ function UassetsList() {
   };
   const filteredAssets = assets.filter((asset) => {
     const searchFields = [
-      asset.assetname,
-      asset.assetTag,
+      asset.name,
+      asset.tag,
       asset.quantity,
       asset.details,
       asset.type,
@@ -277,9 +192,12 @@ function UassetsList() {
     ];
   
     return searchFields.some((field) => {
-      // Check if the field is defined before calling toLowerCase()
-      return field && field.toLowerCase().includes(searchQuery.toLowerCase());
-    });
+      // Check if the field is a string before calling toLowerCase()
+    if (typeof field === 'string') {
+      return field.toLowerCase().includes(searchQuery.toLowerCase());
+    }
+    return false; // Return false for non-string fields
+  });
   });
 
   //////////// State to manage the allocation modal //////////////
@@ -350,9 +268,9 @@ function UassetsList() {
               <tbody>
                 {filteredAssets.map((a, index) => (
                   <tr key={a.id} className="border-black">
-                    <td className="border border-black">{a.assetname}</td>
+                    <td className="border border-black">{a.name}</td>
                     <td className="border border-black">
-                      {cat === 'Consumable Assets' ? a.quantity : a.assetTag}
+                      {cat === 'consumable' ? a.quantity : a.tag}
                     </td>
                     <td className="border border-black">{a.details}</td>
                     <td className="border border-black">{a.type}</td>
