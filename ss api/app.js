@@ -10,8 +10,11 @@ var assetRouter = require('./app-server/routes/asset');
 var branchrouter = require('./app-server/routes/branch');
 var authRoutes = require('./app-server/routes/auth');
 var clistRoutes = require('./app-server/routes/clist');
-var bodyParser= require('body-parser');
+const maintRoutes =require('./app-server/routes/maint')
+var bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+
+
 
 var app = express();
 
@@ -26,6 +29,9 @@ const url = 'mongodb://localhost:27017/IMS';
     console.error('Error connecting to MongoDB:', err);
   }
 })();
+
+
+
 // view engine setup
 app.set('views', path.join(__dirname,'app-server','views'));
 app.set('view engine', 'jade');
@@ -43,6 +49,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 
 // Define routes
 app.use('/', indexRouter);
@@ -51,6 +60,7 @@ app.use('/assets', assetRouter); // Use '/assets' as the base path for asset rou
 app.use('/branches', branchrouter);
 app.use('/auth', authRoutes);
 app.use('/clist', clistRoutes);
+app.use('/maint', maintRoutes);
 
 
 

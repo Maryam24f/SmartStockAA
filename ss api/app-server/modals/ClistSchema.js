@@ -7,7 +7,7 @@ const cList = new mongoose.Schema({
     quantity: {type: Number, required: false },
     amount: {type: Number, required: false },
     total: {type: Number, required: false },
-    subTotal:{type: Number, required: false },
+    totalSum:{type: Number, required: false },
     status: { type: String, required: false },
     // Other asset-related fields
 });

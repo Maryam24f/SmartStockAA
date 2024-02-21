@@ -15,7 +15,7 @@ function SideBar() {
   <div className="relative z-20 flex-col max-h-auto min-h-screen">
       {/* profile bar*/}
   <div className='fixed'>
-     <div className="text-xl bg-white text-black font-extrabold flex justify-start space-x-1 md:w-80 sm:w-56" >
+     <div className="text-xl bg-white text-black font-extrabold flex justify-start space-x-1 md:w-72 sm:w-56" >
       <div className='w-10 h-10 ml-1 mb-1 mt-1 bg-yellow-500 rounded-full'>  
       <SiHomebridge className='w-10 h-10 mb-1'></SiHomebridge>
       </div>
@@ -41,7 +41,7 @@ function SideBar() {
       <Link to="/branches" className="py-2 flex  hover:bg-black hover:text-yellow-400 hover:pl-5 ">
         <AiOutlinePartition className='mr-7 mt-1'/>Branches</Link>
       <Link to="/maintenance" className="py-2 flex  hover:bg-black hover:text-yellow-400 hover:pl-5">
-        <GrHostMaintenance className='mr-7 mt-1'/>Maintenances</Link>
+        <GrHostMaintenance className='mr-7 mt-1'/>Maintenance</Link>
       <Link to="/reports" className="py-2 flex  hover:bg-black hover:text-yellow-400 hover:pl-5 ">
         <BsGraphUpArrow className='mr-7 mt-1'/>Reports</Link>
       <Link to="/users" className="py-2 flex  hover:bg-black hover:text-yellow-400 hover:pl-5">

@@ -114,8 +114,8 @@ const clearAllocationForm = () => {
                       Select Branch
                     </option>
                     {branches.map((branch) => (
-                      <option key={branch} value={branch}>
-                        {branch}
+                      <option key={branch} value={branch.name}>
+                        {branch.name}
                       </option>
                     ))}
                   </select>

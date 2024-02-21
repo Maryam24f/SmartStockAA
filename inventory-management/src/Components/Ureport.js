@@ -21,11 +21,11 @@ function Ureport() {
   }, []);
 
   const fetchData = async () => {
+    console.log("user"+userBranch)
     try {
-      const response = await fetch('http://localhost:8000/clist'); // Adjust the URL based on your backend setup
-      if (response.ok) {
-        const data = await response.json();
-        setRlist(data); // Update state with fetched data
+      const response = await axios.get(`http://localhost:8000/clist/${userBranch}`);
+      if (response.status === 200) {
+        setRlist(response.data); // Update state with fetched data
       } else {
         console.error('Failed to fetch data');
       }
@@ -47,7 +47,37 @@ function Ureport() {
   const [showRequests, setShowRequests] = useState(false);
   const [showGraph, setshowGrap] = useState(false);
   // Define a list of predefined items for the dropdown
-  const predefinedItems = ["Paper", "Pencil", "Eraser", "Pen", "Other"];
+  const [predefinedItems, setPredefinedItems] = useState([]);
+  useEffect(() => {
+    // Fetch data from backend API when the component mounts
+    fetchList();
+  }, []);
+
+  const fetchList = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/assets/consumable`);
+      console.log(response.data);
+      if (response.status === 200) {
+        // Remove duplicates based on asset name
+        const uniqueAssets = response.data.reduce((acc, curr) => {
+          if (!acc.find(item => item.name === curr.name)) {
+            acc.push(curr);
+          }
+          return acc;
+        }, []);
+  
+        // Add "Other" option at the end
+        const assetsWithOtherOption = [...uniqueAssets, { _id: 'other', name: 'Other' }];
+  
+        setPredefinedItems(assetsWithOtherOption); // Update state with fetched data
+      } else {
+        console.error('Failed to fetch data');
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  
 
   // State to manage the selected item in the dropdown
   const [selectedItem, setSelectedItem] = useState("");
@@ -88,18 +118,7 @@ function Ureport() {
     } catch (error) {
       console.error("Error adding branch:", error);
     }
-    // setRlist([ newdata,...Rlist]);
-    // setFormData({
-    // branch: "", // Branch Name
-    // Aname: "", // Asset Type
-    // month: "", // Date
-    // au:"",
-    // quantity: "", // Cost
-    // amount:""
-    // });
-    // setSelectedItem("")
-    // setOtherItem("")
-    // closeModal();
+    
   };
 
   const handleCancelUpdate = () => {
@@ -163,8 +182,8 @@ function Ureport() {
             >
               <option value="">Select an item</option>
               {predefinedItems.map((item) => (
-                <option key={item} value={item}>
-                  {item}
+                <option key={item} value={item.name}>
+                  {item.name}
                 </option>
               ))}
             </select>
@@ -281,9 +300,10 @@ function Ureport() {
   const ListDetails = ({ selectedMonthDetails }) => {
     return (
       <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-black bg-opacity-50">
-        <div className="bg-white p-4 rounded-lg max-w-4xl w-full sm:w-11/12">
+        <div className="bg-white p-4 -mt-60 rounded-lg max-w-4xl w-full sm:w-11/12">
           <h2 className="text-yellow-500 font-bold text-2xl mb-4">List Details</h2>
           <div className="overflow-x-auto">
+           <div className="max-h-96 overflow-auto">
             <table className="min-w-full divide-y divide-gray-200 border-2 border-black shadow-md bg-white rounded-md">
               <thead className="border border-black">
                 <tr className="text-black font-bold">
@@ -306,6 +326,7 @@ function Ureport() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
           <button onClick={() => setModal(false)} className="mt-4 p-3 bg-black rounded-md text-white w-full font-semibold">Close</button>
         </div>

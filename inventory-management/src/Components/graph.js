@@ -41,14 +41,16 @@ function Graph() {
   },[]);
   const fetchData = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/clist/${fixedBranch}`);
-      const data = response.data;
+      const response = await axios.get(`http://localhost:8000/clist/${userBranch}`);
+      const data = response.data.filter(item => item.status === "Accepted");
+      console.log(data)
       setSampledata(data);
-      console.log(sampleData)
+      console.log(sampleData);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
+  
   useLayoutEffect(() => {
     // Initialize the bar graph when the component mounts
     renderBarGraph();
@@ -59,23 +61,23 @@ function Graph() {
       // Filter sample data based on selected criteria
       const filteredData = sampleData.filter(
         (item) =>
-          item.branch === fixedBranch && // Fix the branch value
+          item.branch === userBranch && // Fix the branch value
           (!selectedMonthYear ||
-            getMonthYear(item.date) === selectedMonthYear) &&
+            getMonthYear(item.month) === selectedMonthYear) &&
           ((!fromDate && !toDate) ||
             (fromDate &&
               toDate &&
-              new Date(item.date) >= new Date(fromDate) &&
-              new Date(item.date) <= new Date(toDate)) ||
+              new Date(item.month) >= new Date(fromDate) &&
+              new Date(item.month) <= new Date(toDate)) ||
             (fromDate &&
               !toDate &&
-              new Date(item.date) >= new Date(fromDate)) ||
-            (!fromDate && toDate && new Date(item.date) <= new Date(toDate)))
+              new Date(item.month) >= new Date(fromDate)) ||
+            (!fromDate && toDate && new Date(item.month) <= new Date(toDate)))
       );
 
       // Process data to group by assetType and month
       const processedData = filteredData.reduce((acc, item) => {
-        const key = `${item.assetType}-${getMonthYear(item.date)}`;
+        const key = `${item.Aname}-${getMonthYear(item.month)}`;
         acc[key] = (acc[key] || 0) + item.quantity;
         return acc;
       }, {});
@@ -125,14 +127,14 @@ function Graph() {
     }
 
     const uniqueAssetTypes = Array.from(
-      new Set(sampleData.map((item) => item.assetType))
+      new Set(sampleData.map((item) => item.Aname))
     );
     const uniqueMonths = Array.from(
-      new Set(sampleData.map((item) => getMonthYear(item.date)))
+      new Set(sampleData.map((item) => getMonthYear(item.month)))
     );
     const datasets = uniqueMonths.map((month) => {
-      const data = uniqueAssetTypes.map((assetType) => {
-        const key = `${assetType}-${month}`;
+      const data = uniqueAssetTypes.map((Aname) => {
+        const key = `${Aname}-${month}`;
         return consumableData[key] || 0;
       });
 

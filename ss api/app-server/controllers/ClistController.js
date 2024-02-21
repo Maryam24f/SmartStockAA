@@ -41,4 +41,36 @@ const getDataByBranch= async (req, res) => {
     }
   };
 
-module.exports = { createClist, getClists, getDataByBranch };
+// Controller function to update status based on month and branch
+const updateStatus = async (req, res) => {
+    const { month, branch, status } = req.body;
+
+    try {
+        // Find the data by month and branch and update the status
+        const updatedData = await Clist.findOneAndUpdate({ month, branch }, { status }, { new: true });
+
+        if (updatedData) {
+            res.status(200).json(updatedData);
+        } else {
+            res.status(404).json({ message: "Data not found" });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Controller function to update total and subtotal
+const updateTotal= async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { total } = req.params;
+        // Find the data by ID and update the total value
+        const updatedList = await Clist.findByIdAndUpdate(id, { total }, { new: true });
+        // Return the updated data
+        res.status(200).json(updatedList);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { createClist, getClists, getDataByBranch, updateTotal,updateStatus };

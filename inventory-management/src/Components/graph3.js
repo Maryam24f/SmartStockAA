@@ -2,25 +2,26 @@ import "../App.css";
 import { TbMoodEmptyFilled } from "react-icons/tb";
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import Chart from "chart.js/auto";
+import axios from "axios";
 
 // Assuming your sample data has a 'date' field in the format 'YYYY-MM-DD'
-const sampleData = [
-  { branch: "ISE", date: "2023-01-15", assetType: "Paper", quantity: 200 },
-  { branch: "ISE", date: "2023-01-20", assetType: "Ink", quantity: 150 },
-  { branch: "ISE", date: "2023-02-20", assetType: "Ink", quantity: 130 },
-  { branch: "ISE", date: "2023-03-20", assetType: "Ink", quantity: 110 },
-  { branch: "ISE", date: "2023-04-20", assetType: "Ink", quantity: 90 },
-  { branch: "ISE", date: "2023-01-20", assetType: "Tissues", quantity: 85 },
-  { branch: "ISE", date: "2023-01-20", assetType: "Tea", quantity: 65 },
-  { branch: "ISE", date: "2023-01-20", assetType: "Milk", quantity: 25 },
-  { branch: "ISE", date: "2023-01-20", assetType: "pens", quantity: 55 },
-  { branch: "ISE", date: "2023-02-05", assetType: "Paper", quantity: 140 },
-  { branch: "ISE", date: "2023-02-20", assetType: "pens", quantity: 20},
-  { branch: "ISE", date: "2023-03-05", assetType: "Paper", quantity: 90 },
-  { branch: "ISE", date: "2023-04-05", assetType: "Paper", quantity: 60 },
-  { branch: "ISE", date: "2023-05-05", assjetType:"Paper", quantity: 40 },
-  { branch: "F9",  date: "2023-02-10", assetType: "Ink", quantity: 25 },
-];
+// const sampleData = [
+//   { branch: "ISE", date: "2023-01-15", assetType: "Paper", quantity: 200 },
+//   { branch: "ISE", date: "2023-01-20", assetType: "Ink", quantity: 150 },
+//   { branch: "ISE", date: "2023-02-20", assetType: "Ink", quantity: 130 },
+//   { branch: "ISE", date: "2023-03-20", assetType: "Ink", quantity: 110 },
+//   { branch: "ISE", date: "2023-04-20", assetType: "Ink", quantity: 90 },
+//   { branch: "ISE", date: "2023-01-20", assetType: "Tissues", quantity: 85 },
+//   { branch: "ISE", date: "2023-01-20", assetType: "Tea", quantity: 65 },
+//   { branch: "ISE", date: "2023-01-20", assetType: "Milk", quantity: 25 },
+//   { branch: "ISE", date: "2023-01-20", assetType: "pens", quantity: 55 },
+//   { branch: "ISE", date: "2023-02-05", assetType: "Paper", quantity: 140 },
+//   { branch: "ISE", date: "2023-02-20", assetType: "pens", quantity: 20},
+//   { branch: "ISE", date: "2023-03-05", assetType: "Paper", quantity: 90 },
+//   { branch: "ISE", date: "2023-04-05", assetType: "Paper", quantity: 60 },
+//   { branch: "ISE", date: "2023-05-05", assjetType:"Paper", quantity: 40 },
+//   { branch: "F9",  date: "2023-02-10", assetType: "Ink", quantity: 25 },
+// ];
 function Agraph() {
   const [selectedBranch, setSelectedBranch] = useState("");
   const [selectedMonthYear, setSelectedMonthYear] = useState("");
@@ -30,7 +31,21 @@ function Agraph() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [isGraphVisible, setIsGraphVisible] = useState(false);
-
+  const [sampleData, setSampledata] = useState([]);
+  useEffect(()=>{
+    fetchData()
+  },[]);
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/clist`);
+      const data = response.data.filter(item => item.status === "Accepted");
+      console.log(data)
+      setSampledata(data);
+      console.log(sampleData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
   useLayoutEffect(() => {
     // Initialize the bar graph when the component mounts
     renderBarGraph();
@@ -43,21 +58,21 @@ function Agraph() {
         (item) =>
           item.branch === selectedBranch &&
           (!selectedMonthYear ||
-            getMonthYear(item.date) === selectedMonthYear) &&
+            getMonthYear(item.month) === selectedMonthYear) &&
           ((!fromDate && !toDate) ||
             (fromDate &&
               toDate &&
-              new Date(item.date) >= new Date(fromDate) &&
-              new Date(item.date) <= new Date(toDate)) ||
-            (fromDate && !toDate && new Date(item.date) >= new Date(fromDate)) ||
+              new Date(item.month) >= new Date(fromDate) &&
+              new Date(item.month) <= new Date(toDate)) ||
+            (fromDate && !toDate && new Date(item.month) >= new Date(fromDate)) ||
             (!fromDate &&
               toDate &&
-              new Date(item.date) <= new Date(toDate)))
+              new Date(item.month) <= new Date(toDate)))
       );
   
       // Process data to group by assetType and month
       const processedData = filteredData.reduce((acc, item) => {
-        const key = `${item.assetType}-${getMonthYear(item.date)}`;
+        const key = `${item.Aname}-${getMonthYear(item.month)}`;
         acc[key] = (acc[key] || 0) + item.quantity;
         return acc;
       }, {});
@@ -109,15 +124,15 @@ function Agraph() {
     }
   
     const uniqueAssetTypes = Array.from(
-      new Set(sampleData.map((item) => item.assetType))
+      new Set(sampleData.map((item) => item.Aname))
     );
     const uniqueMonths = Array.from(
-      new Set(sampleData.map((item) => getMonthYear(item.date)))
+      new Set(sampleData.map((item) => getMonthYear(item.month)))
     );
     const datasets = uniqueMonths.map((month) => {
-      const data = uniqueAssetTypes.map((assetType) => {
-        const key = `${assetType}-${month}`;
-        console.log(`Data for ${assetType} in ${month}:`, consumableData[key] || 0);
+      const data = uniqueAssetTypes.map((Aname) => {
+        const key = `${Aname}-${month}`;
+        console.log(`Data for ${Aname} in ${month}:`, consumableData[key] || 0);
         return consumableData[key] || 0;
       });
     

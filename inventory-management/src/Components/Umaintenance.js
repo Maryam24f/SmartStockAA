@@ -1,34 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Us from "./Umain";
-import bill from "../Assets/bill.jpg";
+import axios from "axios";
+import { useAuth } from "./AuthContext";
 function Umaintenance() {
   const navigate = useNavigate();
   const [isModalOpen, setModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [Mlist, setMlist] = useState([
-    {
-      id: 0,
-      branch: "ISE", // Branch Name
-      ACategory: "IT", // Asset Category
-      AType: "85A", // Asset Type
-      assetTag: "45678", // Asset Tag
-      assetName: "tonner", // Asset Name
-      supplier: "abc", // Supplier
-      date: "2024-01-08", // Date
-      cost: "500", // Cost
-      file: "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.istockphoto.com%2Fillustrations%2Frestaurant-bill&psig=AOvVaw3R39YTb0TYLRkK6gc5UO6X&ust=1702711830614000&source=images&cd=vfe&opi=89978449&ved=0CBAQjRxqFwoTCLCn3YL2kIMDFQAAAAAdAAAAABAD", // Bill
-      demand: "refill", // Demand
-      status: "Completed",
-    },
-  ]);
+  const { userBranch } = useAuth();
+  const [Mlist, setMlist] = useState([]);
+
+  useEffect(() => {
+    // Fetch data from backend API when the component mounts
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    console.log("user" + userBranch);
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/maint/${userBranch}`
+      );
+      console.log(response.data);
+      if (response.status === 200) {
+        setMlist(response.data); // Update state with fetched data
+      } else {
+        console.error("Failed to fetch data");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
   const [formData, setFormData] = useState({
     branch: "", // Branch Name
-    ACategory: "", // Asset Category
-    AType: "", // Asset Type
-    assetTag: "", // Asset Tag
-    assetName: "", // Asset Name
+    category: "", // Asset Category
+    type: "", // Asset Type
+    tag: "", // Asset Tag
+    name: "", // Asset Name
     supplier: "", // Supplier
     date: "", // Date
     cost: "", // Cost
@@ -50,34 +59,41 @@ function Umaintenance() {
     setMlist(updatedRow);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+    const newdata = { ...formData, branch: userBranch, status: "" };
     e.preventDefault();
-    //handleOpenClick();
-    const newdataId = Mlist.length + 1;
-    const newdata = { id: newdataId, ...formData, branch: "ISE" };
-    setMlist([newdata, ...Mlist]);
-    setFormData({
-      branch: "", // Branch Name
-      ACategory: "", // Asset Category
-      AType: "", // Asset Type
-      assetTag: "", // Asset Tag
-      assetName: "", // Asset Name
-      supplier: "", // Supplier
-      date: "", // Date
-      cost: "", // Cost
-      bill: "", // Bill
-      demand: "",
-    });
-    closeModal();
+    console.log(newdata);
+    try {
+      await axios.post("http://localhost:8000/maint", newdata, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setFormData({
+        branch: "", // Branch Name
+        category: "", // Asset Category
+        type: "", // Asset Type
+        tag: "", // Asset Tag
+        name: "", // Asset Name
+        supplier: "", // Supplier
+        date: "", // Date
+        cost: "", // Cost
+        bill: "", // Bill
+        demand: "",
+      });
+      closeModal();
+    } catch (error) {
+      console.error("Error adding branch:", error);
+    }
   };
 
   const handleCancelUpdate = () => {
     setFormData({
       branch: "", // Branch Name
-      ACategory: "", // Asset Category
-      AType: "", // Asset Type
-      assetTag: "", // Asset Tag
-      assetName: "", // Asset Name
+      category: "", // Asset Category
+      type: "", // Asset Type
+      tag: "", // Asset Tag
+      name: "", // Asset Name
       supplier: "", // Supplier
       date: "", // Date
       cost: "", // Cost
@@ -96,10 +112,11 @@ function Umaintenance() {
 
   const handleFileInputChange = (e) => {
     const file = e.target.files[0];
+    console.log(e.target.files[0]);
     // Do something with the file, like setting it in the form data
     setFormData((prevFormData) => ({
       ...prevFormData,
-      bill: file,
+      bill: e.target.files[0],
     }));
   };
   const handleSubmitForm = (e) => {
@@ -107,63 +124,69 @@ function Umaintenance() {
     handleOpenClick();
   };
 
+  const openImageInNewWindow = (bill) => {
+    const { contentType, data } = bill;
+    console.log("Image Data:", bill);
+
+    // Convert data to base64
+    const fileReader = new FileReader();
+    fileReader.onloadend = () => {
+      const base64Data = fileReader.result;
+      console.log("Base64 Data:", base64Data);
+
+      // Open image in new window
+      const newWindow = window.open();
+      newWindow.document.write(`<img className="w-20 h-9" src="${base64Data}" alt="Bill" />`);
+    };
+
+    // Read data as DataURL
+    const blob = new Blob([new Uint8Array(data.data)], { type: contentType });
+    fileReader.readAsDataURL(blob);
+  };
+
   function form() {
     return (
-      <form onSubmit={handleSubmitForm}>
+      <form
+        action="/uploads"
+        method="post"
+        enctype="multipart/form-data"
+        onSubmit={handleSubmitForm}
+      >
         <div className="grid gap-6 mb-6 mt-4 md:mt-12 lg:mt-14 lg:grid-cols-3 md:grid-cols-2 sm:ml-8 sm:mr-8 lg:ml-32 lg:mr-32 md:ml-32 md:mr-32">
-          {/* <div>
-            <label
-              htmlFor="branch"
-              className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-            >
-              Branch Name
-            </label>
-            <input
-              type="text"
-              id="branch"
-              name="branch"
-              value={formData.branch}
-              onChange={handleInputChange}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
-              placeholder="Enter branch"
-              required
-            />
-          </div> */}
-
           <div>
             <label
-              htmlFor="ACategory"
+              htmlFor="category"
               className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
             >
               Asset Category
             </label>
             <select
-              id="ACategory"
-              name="ACategory"
-              value={formData.ACategory}
+              id="category"
+              name="category"
+              value={formData.category}
               onChange={handleInputChange}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
               required
             >
               <option value="">Select asset category</option>
-              <option value="Category1">fix</option>
-              <option value="Category2">IT</option>
-              <option value="Category3">consumable</option>
+              <option value="fix">fix</option>
+              <option value="IT">IT</option>
+              <option value="consumable">consumable</option>
             </select>
           </div>
 
           <div>
             <label
-              htmlFor="AType"
+              htmlFor="type"
               className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
             >
               Asset Type
             </label>
             <input
               type="text"
-              id="AType"
-              name="AType"
-              value={formData.AType}
+              id="type"
+              name="type"
+              value={formData.type}
               onChange={handleInputChange}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
               placeholder="Enter asset type"
@@ -173,16 +196,16 @@ function Umaintenance() {
 
           <div>
             <label
-              htmlFor="assetTag"
+              htmlFor="tag"
               className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
             >
               Asset Tag
             </label>
             <input
               type="text"
-              id="assetTag"
-              name="assetTag"
-              value={formData.assetTag}
+              id="tag"
+              name="tag"
+              value={formData.tag}
               onChange={handleInputChange}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
               placeholder="Enter asset tag"
@@ -192,16 +215,16 @@ function Umaintenance() {
 
           <div>
             <label
-              htmlFor="assetName"
+              htmlFor="name"
               className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
             >
               Asset Name
             </label>
             <input
               type="text"
-              id="assetName"
-              name="assetName"
-              value={formData.assetName}
+              id="name"
+              name="name"
+              value={formData.name}
               onChange={handleInputChange}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
               placeholder="Enter asset name"
@@ -330,10 +353,10 @@ function Umaintenance() {
   const filteredData = Mlist.filter((M) => {
     const searchFields = [
       M.branch,
-      M.ACategory,
-      M.AType,
-      M.assetName,
-      M.assetTag,
+      M.category,
+      M.type,
+      M.name,
+      M.tag,
       M.cost,
       M.date,
       M.demand,
@@ -341,8 +364,10 @@ function Umaintenance() {
       M.status,
     ];
     return searchFields.some((field) => {
-      // Check if the field is defined before calling toLowerCase()
-      return field && field.toLowerCase().includes(searchQuery.toLowerCase());
+      if (typeof field === "string") {
+        return field.toLowerCase().includes(searchQuery.toLowerCase());
+      }
+      return false; // Return false for non-string fields
     });
   });
 
@@ -428,19 +453,28 @@ function Umaintenance() {
           </thead>
           <tbody>
             {filteredData.map((row) => (
-              <tr key={row.id} className="border-black">
+              <tr key={row._id} className="border-black">
                 <td className="border border-black">{row.branch}</td>
-                <td className="border border-black">{row.ACategory}</td>
-                <td className="border border-black">{row.AType}</td>
-                <td className="border border-black">{row.assetTag}</td>
-                <td className="border border-black">{row.assetName}</td>
+                <td className="border border-black">{row.category}</td>
+                <td className="border border-black">{row.type}</td>
+                <td className="border border-black">{row.tag}</td>
+                <td className="border border-black">{row.name}</td>
                 <td className="border border-black">{row.supplier}</td>
                 <td className="border border-black">{row.date}</td>
                 <td className="border border-black">{row.cost}</td>
                 <td className="border border-black">
-                  <a href={bill} target="_blank" rel="noopener noreferrer">
-                    <img className="w-20 h-9" src={bill} alt="Bill" />
-                  </a>
+                  <td className="border border-black">
+                    <a href="#" onClick={() => openImageInNewWindow(row.bill)}>
+                      <img
+                        src={`data:${row.bill.contentType};base64,${btoa(
+                          String.fromCharCode(
+                            ...new Uint8Array(row.bill.data.buffer)
+                          )
+                        )}`}
+                        alt="Bill"
+                      />
+                    </a>
+                  </td>
                 </td>
 
                 <td className="border border-black">{row.demand}</td>

@@ -24,6 +24,17 @@ const getAssets = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// Get all consuamble assets
+const getConsuamble = async (req, res) => {
+  console.log('Get Assets Function Called');
+  try {
+    const assets = await Asset.find({category: 'consumable'});
+    res.setHeader('Cache-Control', 'no-store');
+    res.status(200).json(assets);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 // Get assets by category
 const getAssetsByCategory = async (req, res) => {
@@ -215,5 +226,5 @@ const getAllocationHistory = async (req, res) => {
   }
 };
 
-module.exports = { createAsset, getAssets, getAssetsByCategory, updateAsset, deleteAsset, allocateAsset, getAllocationHistory };
+module.exports = { getConsuamble, createAsset, getAssets, getAssetsByCategory, updateAsset, deleteAsset, allocateAsset, getAllocationHistory };
 

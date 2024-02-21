@@ -37,8 +37,22 @@ function AssetsList() {
     }
   };
   // Array of options for the dropdown
-  const options = ["ISE", "F11", "G9"];
+  const [options, setOptions] = useState([]);
+  useEffect(() => {
+    // Fetch branches when component mounts
+    fetchBranches();
+  }, []); // Empty dependency array ensures this effect runs only once on mount
 
+  const fetchBranches = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/branches");
+      console.log(response)
+      setOptions(response.data);
+      console.log(options)
+    } catch (error) {
+      console.error("Error fetching branches:", error);
+    }
+  };
   // State to manage the dropdown state for each row
 
   // Function to handle opening/closing dropdown for a specific row

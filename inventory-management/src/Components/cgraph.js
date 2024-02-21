@@ -2,19 +2,19 @@ import "../App.css";
 import { TbMoodEmptyFilled } from "react-icons/tb";
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import Chart from "chart.js/auto";
-
+import axios from "axios";
 // Assuming your sample data has a 'date' field in the format 'YYYY-MM-DD'
-const sampleData = [
-  { branch:"ISE",date: "2023-01-15", assetType:"Paper", quantity:60 },
-  { branch:"f11",date: "2023-01-15", assetType:"Paper", quantity:6 },
-  { branch:"g9", date: "2023-01-15", assetType:"Paper", quantity:20 },
-  { branch:"f9", date: "2023-01-15", assetType:"Paper", quantity:40 },
-  { branch:"i10",date: "2023-01-15", assetType:"Paper", quantity:250 },
-  { branch:"f7", date: "2023-01-15", assetType:"Paper", quantity:300 },
-  { branch:"f9", date: "2023-02-20", assetType:"Paper", quantity:15 },
-  { branch:"f9", date: "2023-01-20", assetType:"Ink",   quantity:15 },
-  { branch:"f7", date: "2023-03-1",  assetType:"Paper", quantity:300 },
-];
+// const sampleData = [
+//   { branch:"ISE",date: "2023-01-15", assetType:"Paper", quantity:60 },
+//   { branch:"f11",date: "2023-01-15", assetType:"Paper", quantity:6 },
+//   { branch:"g9", date: "2023-01-15", assetType:"Paper", quantity:20 },
+//   { branch:"f9", date: "2023-01-15", assetType:"Paper", quantity:40 },
+//   { branch:"i10",date: "2023-01-15", assetType:"Paper", quantity:250 },
+//   { branch:"f7", date: "2023-01-15", assetType:"Paper", quantity:300 },
+//   { branch:"f9", date: "2023-02-20", assetType:"Paper", quantity:15 },
+//   { branch:"f9", date: "2023-01-20", assetType:"Ink",   quantity:15 },
+//   { branch:"f7", date: "2023-03-1",  assetType:"Paper", quantity:300 },
+// ];
 
 function Creport() {
   const [selectedMonthYear, setSelectedMonthYear] = useState("");
@@ -25,6 +25,22 @@ function Creport() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [isGraphVisible, setIsGraphVisible] = useState(false);
+  const [sampleData, setSampledata] = useState([]);
+  useEffect(()=>{
+    fetchData()
+  },[]);
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/clist`);
+      const data = response.data.filter(item => item.status === "Accepted");
+      console.log(data)
+      setSampledata(data);
+      console.log(sampleData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  
 
   useLayoutEffect(() => {
     // Initialize the bar graph when the component mounts
@@ -34,17 +50,17 @@ function Creport() {
   useEffect(() => {
     if (hasMounted.current) {
       const filteredData = sampleData.filter((item) => {
-        const isAssetTypeMatch = item.assetType === selectedAssetType;
+        const isAssetTypeMatch = item.Aname === selectedAssetType;
         const isMonthYearMatch =
-          !selectedMonthYear || getMonthYear(item.date) === selectedMonthYear;
+          !selectedMonthYear || getMonthYear(item.month) === selectedMonthYear;
 
         if (fromDate && toDate) {
           // If both fromDate and toDate are provided, consider the date range
           return (
             isAssetTypeMatch &&
             isMonthYearMatch &&
-            item.date >= fromDate &&
-            item.date <= toDate
+            item.month >= fromDate &&
+            item.month <= toDate
           );
         } else {
           // If fromDate or toDate is not provided, ignore the date range
@@ -56,7 +72,7 @@ function Creport() {
       const branchData = filteredData.reduce((acc, item) => {
         const branch = item.branch;
 
-        const monthYear = getMonthYear(item.date);
+        const monthYear = getMonthYear(item.month);
        
         if (!acc[branch]) {
           acc[branch] = {};
