@@ -26,6 +26,39 @@ function Creport() {
   const [toDate, setToDate] = useState("");
   const [isGraphVisible, setIsGraphVisible] = useState(false);
   const [sampleData, setSampledata] = useState([]);
+  const [predefinedItems, setPredefinedItems] = useState([]);
+  const [selectedItem, setSelectedItem] = useState("");
+  useEffect(() => {
+    // Fetch data from backend API when the component mounts
+    fetchList();
+  }, []);
+
+  const fetchList = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/clist`);
+      console.log("clist: " + response.data);
+      if (response.status === 200) {
+        // Remove duplicates based on asset name
+        const uniqueAssets = response.data.reduce((acc, curr) => {
+          if (!acc.find(item => item.Aname === curr.Aname)) {
+            acc.push(curr);
+          }
+          return acc;
+        }, []);
+        console.log("asset name: "+ uniqueAssets)
+        // Add "Other" option at the end
+        //const assetsWithOtherOption = [...uniqueAssets, { _id: 'other', name: 'other' }];
+  
+        setPredefinedItems(uniqueAssets); // Update state with fetched data
+        console.log("pre:"+predefinedItems)
+      } else {
+        console.error('Failed to fetch data');
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   useEffect(()=>{
     fetchData()
   },[]);
@@ -185,6 +218,12 @@ function Creport() {
     setToDate("");
     setIsGraphVisible(false);
   };
+  const handleItemChange = (e) => {
+    const { value } = e.target;
+    // If the selected item is "Other", clear the otherItem state
+    setSelectedAssetType(value);
+    console.log("value: "+ selectedItem)
+  };
 
   return (
     <div className="flex h-full">
@@ -200,16 +239,24 @@ function Creport() {
         </div>
         {/* Dropdowns for selecting asset type and month-year */}
         <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 md:items-center mt-1">
-          <div>
+          <div className="mt-1">
             <label className="font-bold text-gray-600">
               Asset:
-              <input
-                type="text"
-                value={selectedAssetType}
-                className="border-2 border-gray-700 font-light rounded-md ml-2 w-44 h-10"
-                onChange={(e) => setSelectedAssetType(e.target.value)}
-              />
             </label>
+              <select
+              value={selectedAssetType}
+              onChange={handleItemChange}
+              className="border-2 border-gray-700 ml-2 rounded-md font-light w-44 h-10"
+              required
+            >
+              <option value="">Select an item</option>
+              {predefinedItems.map((item) => (
+                <option key={item} value={item.Aname}>
+                  {item.Aname}
+                </option>
+              ))}
+            </select>
+            
           </div>
           <div>
             <label className="font-bold text-gray-600">

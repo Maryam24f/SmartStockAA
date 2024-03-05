@@ -84,11 +84,11 @@ const Login = () => {
                 }
               />
             </div>
-            <div class="mb-6 text-yellow-500">
+            {/* <div class="mb-6 text-yellow-500">
               <a href="#" class="hover:underline">
                 Forgot Password?
               </a>
-            </div>
+            </div> */}
           </form>
           <div className="flex justify-between">
             <div className="space-y-2">
@@ -105,11 +105,11 @@ const Login = () => {
                 Login as User
               </button>
             </div>
-            <div class=" text-yellow-500 text-center">
+            {/* <div class=" text-yellow-500 text-center">
               <a href="#" class="hover:underline">
                 Sign up Here
               </a>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

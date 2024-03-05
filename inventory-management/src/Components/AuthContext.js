@@ -6,13 +6,15 @@ const AuthContext = createContext();
 const AuthProvider = ({ children }) => {
   const [userRole, setUserRole] = useState('');
   const [userBranch, setUserBranch] = useState('');
-
+  const [userEmail, setUemail]=useState('');
   useEffect(() => {
     const storedUserRole = localStorage.getItem('userRole');
     const storedUserBranch = localStorage.getItem('userBranch')
+    const storedUserEmail = localStorage.getItem('userEmail');
     if (storedUserRole && storedUserBranch) {
       setUserRole(storedUserRole);
       setUserBranch(storedUserBranch)
+      setUemail(storedUserEmail);
     }
   }, []);
 
@@ -22,9 +24,10 @@ const AuthProvider = ({ children }) => {
     try {
       // Make an API call to authenticate the user
       const response = await axios.post('http://localhost:8000/auth/login', { username, password });
-      const { token } = response.data;  
+      const { token} = response.data;  
       // Save the authentication token to local storage
       localStorage.setItem('authToken', token);
+      
   
       // After successful login, fetch user role by username
       const roleResponse = await axios.get(`http://localhost:8000/users/${username}`, {
@@ -34,12 +37,16 @@ const AuthProvider = ({ children }) => {
       });
       const role = roleResponse.data.role;
       const branch = roleResponse.data.branch;
+      const email = roleResponse.data.email;
       console.log("branch: "+ branch)
       // Update user role in state and localStorage
       setUserRole(role);
       setUserBranch(branch);
+      setUemail(email);
+      console.log(email)
       localStorage.setItem('userRole', role);
       localStorage.setItem('userBranch', branch);
+      localStorage.setItem('userEmail', email);
     } catch (error) {
       // Handle authentication error
       console.error('Error logging in:', error);
@@ -57,7 +64,7 @@ const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ userRole, isAdmin, login, logout, userBranch }}>
+    <AuthContext.Provider value={{ userRole, isAdmin, login, logout, userBranch, userEmail }}>
       {children}
     </AuthContext.Provider>
   );

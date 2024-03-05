@@ -16,7 +16,10 @@ const login = async (req, res) => {
       // Compare the provided password with the password stored in the database
       if (user.password === password) {
         // If passwords match, login successful
-        return res.status(200).json({ message: "Login successful", user });
+        console.log("useremail: "+user.email)
+        return res.status(200).json({ message: "Login successful", user: { username: user.username, email: user.email, role: user.role, branch: user.branch }
+        });
+          
       } else {
         // If passwords don't match, return an error
         return res.status(401).json({ message: "Invalid credentials" });

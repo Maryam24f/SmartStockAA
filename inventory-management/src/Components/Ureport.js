@@ -14,7 +14,7 @@ function Ureport() {
   const [activeTab, setActiveTab] = useState("requests"); // State to track active tab
   const [selectedRow, setSelectedRow] = useState(null); // State to track selected row for modal
   const [Rlist, setRlist] = useState([]);
-  const { userBranch } = useAuth();
+  const { userBranch, userEmail } = useAuth();
   useEffect(() => {
     // Fetch data from backend API when the component mounts
     fetchData();
@@ -35,7 +35,6 @@ function Ureport() {
   };
 
   const [formData, setFormData] = useState({
-    branch: "", // Branch Name
     Aname: "", // Asset Type
     month: "", // Date
     au:"",
@@ -67,7 +66,7 @@ function Ureport() {
         }, []);
   
         // Add "Other" option at the end
-        const assetsWithOtherOption = [...uniqueAssets, { _id: 'other', name: 'Other' }];
+        const assetsWithOtherOption = [...uniqueAssets, { _id: 'other', name: 'other' }];
   
         setPredefinedItems(assetsWithOtherOption); // Update state with fetched data
       } else {
@@ -97,13 +96,17 @@ function Ureport() {
 
   const handleSubmit =async (e) => {
     e.preventDefault();
-    const newdata = { ...formData, branch: userBranch, Aname:(selectedItem==="Other" ? otherItem :selectedItem)  };
+    const newdata = { 
+      ...formData, 
+      email: userEmail, 
+      branch: userBranch, 
+      Aname:(selectedItem==="other" ? otherItem :selectedItem)
+      };
     e.preventDefault();
-    console.log(formData)
+    console.log(newdata)
     try {
       await axios.post("http://localhost:8000/clist", newdata);
       setFormData({
-        branch: "", // Branch Name
         Aname: "", // Asset Type
         month: "", // Date
         au:"",
@@ -149,18 +152,18 @@ function Ureport() {
 
   const handleItemChange = (e) => {
     const { value } = e.target;
-    // If the selected item is "Other", clear the otherItem state
+    setSelectedItem(value);
+    // If the selected item is "Other", clear the otherItemValue state
     if (value === "Other") {
       setOtherItem("");
     }
-    setSelectedItem(value);
   };
 
   const handleOtherItemChange = (e) => {
     const { value } = e.target;
-    setSelectedItem("Other");
     setOtherItem(value);
   };
+  
 
   function form() {
     return (
@@ -188,7 +191,7 @@ function Ureport() {
               ))}
             </select>
             {/* Input field for user input if "Other" is selected */}
-            {selectedItem === "Other" && (
+            {selectedItem === "other" && (
               <input
                 type="text"
                 value={otherItem}

@@ -6,6 +6,7 @@ import SideBar from './main';
 import Profile from './profile';
 import { useNavigate } from 'react-router-dom';
 import { dashboardContent } from './Utilities';
+import axios from 'axios';
 
 function Dashboard() {
   ChartJS.register(ArcElement, Tooltip, Legend);
@@ -23,40 +24,23 @@ function Dashboard() {
   // }, []); //
 
   // Mock data for assets
-  const assets = [
-    {
-      id: 0,
-      status: "Not Allocated",
-      assetname: "LCD1",
-      assetTag: "0500989",
-      details: "aaaaaaaaaaaaabcc",
-      type: "LCD",
-      category:"IT",
-      branch: "warehouse I9",
-    },
-    {
-      id: 1,
-      status: "Allocated",
-      assetname: "paper",
-      assetTag: "0500989",
-      details: "aaaaaaaaaaaaabcc",
-      type: "paper",
-      category:"consumable",
-      branch: "F11",
-    },
-    {
-      id: 2,
-      status: "Allocated",
-      assetname: "chair",
-      assetTag: "0500989",
-      details: "aaaaaaaaaaaaabcc",
-      type: "chair",
-      category:"fix",
-      branch: "ISE",
-    },
-    
-  ];
-  
+  const [assets, setAssets] = useState([])
+  useEffect(() => {
+    fetchData(); // Fetch data when the category changes
+    // Add other dependencies if needed for the useEffect
+  }, []);
+  const fetchData = async () => {
+    try {
+      // Make a GET request to fetch assets based on the category
+      const response = await axios.get(`http://localhost:8000/assets`);
+      console.log("res: "+ response.data)
+      setAssets(response.data);
+      console.log("assets: "+assets)
+      // Assuming you want to show all data initially
+    } catch (error) {
+      console.error("Error fetching assets:", error);
+    }
+  };
   // Extract asset categories and their counts
   const assetCategories = {};
   assets.forEach((asset) => {
@@ -180,7 +164,7 @@ function Dashboard() {
 
                       >
                         <h1 className="text-white text-2xl">{Heading1}</h1>
-                        <h1 className="font-bold text-4xl text-white ">
+                        <h1 className="font-serif text-4xl text-white p-8">
                           {Heading2}
                         </h1>
                       </div>

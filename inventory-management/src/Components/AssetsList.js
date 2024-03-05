@@ -249,18 +249,19 @@ function AssetsList() {
       const searchFields = [
         asset.name,
         asset.tag,
-        asset.quantity,
         asset.details,
         asset.type,
         asset.status,
         asset.branch,
       ];
 
-      return searchFields.some((field) => {
-        return field && field.toLowerCase().includes(query.toLowerCase());
-      });
+      const filteredSearchFields = searchFields.filter(field => field !== null && field !== undefined);
+    
+      return filteredSearchFields.some((field) =>
+        (field ?? '').toLowerCase().includes(query.toLowerCase())
+      );
     });
-    //setAssets(filteredAssets);
+    
     setFilteredData(filteredAssets);
   };
 
@@ -616,5 +617,4 @@ function AssetsList() {
     </div>
   );
 }
-
 export default AssetsList;

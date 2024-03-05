@@ -54,14 +54,14 @@ function Graph() {
   useLayoutEffect(() => {
     // Initialize the bar graph when the component mounts
     renderBarGraph();
-  }, []);
+  }, []);// Empty dependency array to ensure it runs only once on mount
 
   useEffect(() => {
     if (hasMounted.current) {
       // Filter sample data based on selected criteria
       const filteredData = sampleData.filter(
         (item) =>
-          item.branch === userBranch && // Fix the branch value
+          item.branch === userBranch &&
           (!selectedMonthYear ||
             getMonthYear(item.month) === selectedMonthYear) &&
           ((!fromDate && !toDate) ||
@@ -69,30 +69,31 @@ function Graph() {
               toDate &&
               new Date(item.month) >= new Date(fromDate) &&
               new Date(item.month) <= new Date(toDate)) ||
-            (fromDate &&
-              !toDate &&
-              new Date(item.month) >= new Date(fromDate)) ||
-            (!fromDate && toDate && new Date(item.month) <= new Date(toDate)))
+            (fromDate && !toDate && new Date(item.month) >= new Date(fromDate)) ||
+            (!fromDate &&
+              toDate &&
+              new Date(item.month) <= new Date(toDate)))
       );
-
+  
       // Process data to group by assetType and month
       const processedData = filteredData.reduce((acc, item) => {
         const key = `${item.Aname}-${getMonthYear(item.month)}`;
         acc[key] = (acc[key] || 0) + item.quantity;
         return acc;
       }, {});
-
+  
       setConsumableData(processedData);
-      setIsGraphVisible(true); // Set visibility flag for the graph
+      // Set visibility flag for the graph
+      setIsGraphVisible(true);
     } else {
       hasMounted.current = true;
     }
-  }, [selectedMonthYear, fromDate, toDate]);
-
+  }, [userBranch, selectedMonthYear, fromDate, toDate]);
+  
   useEffect(() => {
     // When consumableData changes, update the bar graph
     renderBarGraph();
-  }, [consumableData]);
+  }, [consumableData]);  
 
   const getMonthYear = (dateString) => {
     const date = new Date(dateString);
@@ -108,6 +109,7 @@ function Graph() {
       return;
     }
     const ctx = canvas.getContext("2d");
+  
     if (!ctx) {
       console.log("Canvas context not available");
       return;
@@ -116,7 +118,7 @@ function Graph() {
     if (chartInstanceRef.current) {
       chartInstanceRef.current.destroy();
     }
-
+  
     if (
       Object.keys(consumableData).length === 0 ||
       (!selectedMonthYear && (!fromDate || !toDate))
@@ -125,7 +127,7 @@ function Graph() {
       setIsGraphVisible(false);
       return;
     }
-
+  
     const uniqueAssetTypes = Array.from(
       new Set(sampleData.map((item) => item.Aname))
     );
@@ -135,9 +137,10 @@ function Graph() {
     const datasets = uniqueMonths.map((month) => {
       const data = uniqueAssetTypes.map((Aname) => {
         const key = `${Aname}-${month}`;
+        console.log(`Data for ${Aname} in ${month}:`, consumableData[key] || 0);
         return consumableData[key] || 0;
       });
-
+    
       return {
         label: month,
         data: data,
@@ -150,7 +153,7 @@ function Graph() {
         borderWidth: 1,
       };
     });
-
+    
     // Create a new bar graph
     chartInstanceRef.current = new Chart(ctx, {
       type: "bar",
@@ -159,7 +162,7 @@ function Graph() {
         datasets: datasets,
       },
     });
-
+  
     console.log("Graph rendered");
   };
 
@@ -188,7 +191,7 @@ function Graph() {
             <div className="flex items-center">
               <div className="font-bold text-gray-600">Branch:</div>
               <div className="border-2 border-gray-700 ml-1 rounded-md font-light w-52 h-10">
-                {fixedBranch}
+                {userBranch}
               </div>
             </div>
 
