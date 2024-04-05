@@ -9,7 +9,7 @@ function Uassets() {
       
   
       // Use the `navigate` function to redirect to a new page with props
-      navigate(`/Uassets/Uassetslist`, { state: data });
+      navigate(`/Uassets/Uassetslist`, { state: {category: data.category} });
     };
   
     return (
@@ -35,7 +35,7 @@ function Uassets() {
               {/* Consumable Assets */}
               <div
                 className="p-1 w-full h-1/4  rounded-xl sm:flex border border-gray-200 bg-white bg-opacity-50 shadow-xl hover:rounded-2xl lg:transform md:transform transition-transform hover:scale-95"
-                onClick={() => handleDivClick({category:'consumable'})}
+                onClick={() => handleDivClick({category:"consumable"})}
               >
                 <div className="sm:w-7/12 pl-0 p-1 whitespace-nowrap">
                   <div className="space-y-0">

@@ -1,11 +1,11 @@
 const User = require('../modals/userSchema');
-
-// Function to get all users
+// Function to get all users //
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
     res.json(users);
-  } catch (error) {
+  } 
+  catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
@@ -30,14 +30,14 @@ const createUser = async (req, res) => {
   }
 };
 
-// Function to update an existing user
+    // Function to update an existing user //
 const updateUser = async (req, res) => {
   const { id } = req.params;
-
-  try {
+  try { 
     const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true });
     res.json(updatedUser);
-  } catch (error) {
+  }
+  catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
@@ -45,11 +45,11 @@ const updateUser = async (req, res) => {
 // Function to delete a user
 const deleteUser = async (req, res) => {
   const { id } = req.params;
-
   try {
     await User.findByIdAndDelete(id);
     res.json({ message: 'User deleted successfully' });
-  } catch (error) {
+  } 
+  catch (error) {
     res.status(400).json({ message: error.message });
   }
 };

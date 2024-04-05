@@ -7,15 +7,15 @@ import AssetAllocationModal from "./AssetAllocationModal";
 import Us from './Umain'
 import axios from 'axios';
 import { useAuth } from "./AuthContext";
+import AssetModal from "./AssetModal";
 function UassetsList() {
   // Access userBranch from the AuthContext
-  const { userBranch } = useAuth();
+  const { userBranch } = useAuth()
   // Use the useLocation hook to get the current location
   const location = useLocation();
-
+  const {state: { category}} = location;
   // Array of options for the dropdown
   const options = ["Branches", "ISE", "F11", "G9"];
-
   // State to manage the dropdown state for each row
 
   // Function to handle opening/closing dropdown for a specific row
@@ -25,32 +25,33 @@ function UassetsList() {
     );
   };
   // Access the state object from the location, which contains the props passed through navigation
-  const { state: props } = location;
-  const cat = props.category;
+  
+  const cat = category;
+  console.log("Location state:", location.state);
   console.log("Category value:", cat);
   // State to manage the list of assets
   const [assets, setAssets] = useState([]);
 
   useEffect(() => {
     console.log("user: "+userBranch +"cat:"+ cat)
-    const fetchAssets = async () => {
-      
-      try {
-        if (userBranch && cat) {
-          // Make an API call to fetch assets based on userBranch and category
-          const response = await axios.get(`http://localhost:8000/branches/${userBranch}/${cat}`);
-          setAssets(response.data);
-          console.log("response:" + assets)
-        }
-      } catch (error) {
-        console.error('Error fetching assets:', error);
-      }
-    };
+    fetchAssets()
+  }, [category, userBranch]);
   
-    if (userBranch && cat) {
-      fetchAssets();
+  const fetchAssets = async () => {
+      
+    try {
+      if (userBranch && cat) {
+        // Make an API call to fetch assets based on userBranch and category
+        const response = await axios.get(`http://localhost:8000/branches/${userBranch}/${category}`);
+        setAssets(response.data);
+        console.log("response:" + assets)
+      }
+    } catch (error) {
+      console.error('Error fetching assets:', error);
     }
-  }, []);
+  };
+
+  
   
   // State to manage the dropdown state for each row
   const [dropdownStates, setDropdownStates] = useState(assets.map(() => false));
@@ -73,7 +74,7 @@ function UassetsList() {
   const [modalMode, setModalMode] = useState("add");
   const [selectedAssetId, setSelectedAssetId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-
+ 
   const openAddModal = () => {
     setFormData({
       status: "Not Allocated",
@@ -109,30 +110,49 @@ function UassetsList() {
   };
   // Function to handle form submission (add asset)
   // Update the handleSaveAsset function to update the dropdown states when adding a new asset
-  const handleSaveAsset = () => {
-    if (modalMode === "update" && selectedAssetId !== null) {
-      // Update existing asset
-      const updatedAssets = [...assets];
-      const index = updatedAssets.findIndex(
-        (asset) => asset.id === selectedAssetId
-      );
-      updatedAssets[index] = { id: selectedAssetId, ...formData };
-      setAssets(updatedAssets);
-    } else {
-      // Add new asset
-      const newAssetId = assets.length + 1;
-      const newAsset = {
-        id: newAssetId,
-        status: "Not Allocated",
-        ...formData,
-      };
-      // Unshift the new asset to the beginning of the assets array
-      setAssets([newAsset, ...assets]);
-      // Update dropdown states for the new asset
-      setDropdownStates([false, ...dropdownStates]);
-    }
+  const handleSaveAsset = async () => {
+    console.log(cat)
+    // Assuming formData is an object
+    const FormData = {
+      ...formData,
+      category: category,
+      branch: userBranch,
+      status: "Allocated"
+    };
 
-    setIsModalOpen(false);
+    try {
+      var response;
+        // Add new asset
+        response = await axios.post(`http://localhost:8000/assets`,
+          FormData,
+        );
+      console.log("API Response:", response.data);
+        // Handle add
+        const newAsset = response.data;
+        setAssets([newAsset, ...assets]);
+        console.log("cate"+category)
+      
+
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error saving asset:", error);
+
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+        console.error("Response headers:", error.response.headers);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error("No response received. Request:", error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error("Error setting up the request:", error.message);
+      }
+
+      // Handle error, show a message, or perform other actions as needed
+    }
   };
 
   // Update the handleAllocateAsset function to handle dropdown state for all assets
@@ -228,6 +248,7 @@ function UassetsList() {
     // Close the allocation modal
     closeAllocationModal();
   };
+  
   ////////////////////////////////////////////////
 
   return (
@@ -239,7 +260,14 @@ function UassetsList() {
           <h2 className="text-4xl font-semibold mt-24">{cat}</h2>
 
           {/* Add button to open the modal */}
-          <div className="flex justify-end">
+          <div className="flex justify-between">
+            <button
+              onClick={openAddModal}
+              className="justify-start mt-4 px-2 py-2 transition rounded-lg bg-black text-yellow-400 hover:bg-white hover:text-gray-800 border-2 border-gray-200 focus:outline-none"
+            >
+              Add Asset
+            </button>
+
 
             <div className="mt-4">
               <h className="font-bold">Search: </h>
@@ -259,7 +287,7 @@ function UassetsList() {
                 <tr className="bg-black text-yellow-400 font-bold">
                   <td className="border border-black">Asset Name</td>
                   <td className="border border-black">
-                  {cat === 'Consumable Assets' ? 'Quantity' : 'Asset Tag'}
+                  {cat === 'consumable' ? 'Quantity' : 'Asset Tag'}
                   </td>
                   <td className="border border-black">Details</td>
                   <td className="border border-black">Type</td>

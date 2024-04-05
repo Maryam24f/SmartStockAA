@@ -16,19 +16,19 @@ function Maintenance() {
   }, []);
 
   const fetchData = async () => {
-    try {
-      const response = await fetch("http://localhost:8000/clist"); // Adjust the URL based on your backend setup
-      if (response.ok) {
-        const data = await response.json();
-        setRlist(data); // Update state with fetched data
-        console.log(Rlist);
-      } else {
-        console.error("Failed to fetch data");
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
+  try {
+    const response = await fetch("http://localhost:8000/clist");
+    if (response.ok) {
+      const data = await response.json();
+      setRlist(data); // Update state with fetched data
+      console.log(Rlist);
+    } else {
+      console.error("Failed to fetch data");
     }
-  };
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
 
   const fetchMaint = async () => {
     try {
@@ -112,7 +112,7 @@ function Maintenance() {
   //   console.log("id" + totalId + "nmbr" + total);
   //   updateTotalById(totalId, total);
   // }, [totalId, total]);
-
+  const [dataUpdated, setDataUpdated] = useState(false);
   // Function to update total by ID
   const updateTotalById = async (id, total) => {
     try {
@@ -148,8 +148,67 @@ function Maintenance() {
     setSelectedBranch(branch);
     setModal(true);
   };
+
   //////list details//////
-  const ListDetails = ({ selectedMonthDetails, branch }) => {
+  // State variables for managing form input values
+  const [editFormData, setEditFormData] = useState({
+    Aname: "",
+    au: "",
+    month: "",
+    quantity: "",
+    amount: "",
+  });
+
+  // State to manage modal visibility and edited row data
+const [editModalOpen, setEditModalOpen] = useState(false);
+const [selectedRowData, setSelectedRowData] = useState(null);
+
+/// Function to handle opening the edit modal
+const handleEditClick = (rowData) => {
+  console.log("edit123: " + rowData._id)
+  // Set the data of the row being edited to the edit form data state
+  setEditFormData({
+    id: rowData._id,
+    Aname: rowData.Aname,
+    au: rowData.au,
+    month: rowData.month,
+    quantity: rowData.quantity,
+    amount: rowData.amount,
+  });
+  // Open the edit modal
+  setEditModalOpen(true);
+};
+
+// Function to handle closing the edit modal
+const handleEditModalClose = () => {
+  setSelectedRowData(null); // Clear the selected row data
+  setEditModalOpen(false); // Close the edit modal
+};
+  // Function to handle updating the record in the database
+  const handleUpdateClick = async (id) => {
+    try {
+      console.log(id)
+      // Make a PUT request using Axios to update the record in the backend
+      await axios.post(`http://localhost:8000/clist/update/${id}`, editFormData); // Remove editRowId
+
+      // Refetch data after updating the record
+      fetchData();
+      // Close the edit modal
+      handleEditModalClose();
+    } catch (error) {
+      console.error("Error updating record:", error);
+    }
+  };
+
+  // Function to handle form input changes within the edit modal
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
+  const ListDetails = ({ selectedMonthDetails}) => {
     const totalSum = selectedMonthDetails.reduce(
       (total, item) => total + item.amount * item.quantity,
       0
@@ -157,7 +216,7 @@ function Maintenance() {
     setTotalSum(totalSum);
     return (
       <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-black bg-opacity-50">
-        <div className="bg-white p-4 -mt-20 ml-0 md:ml-60 rounded-lg max-w-4xl w-full sm:w-11/12 overflow-auto">
+        <div className="bg-white p-4 -mt-96 ml-0 md:ml-60 rounded-lg max-w-4xl w-full sm:w-11/12 overflow-auto">
           <h2 className="text-yellow-500 font-bold text-2xl mb-4">
             List Details
           </h2>
@@ -172,6 +231,7 @@ function Maintenance() {
                   <th className="border border-black">Quantity</th>
                   <th className="border border-black">Amount</th>
                   <th className="border border-black">Total</th>
+                  <th className="border border-black">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -182,15 +242,20 @@ function Maintenance() {
                        updateTotalById(item._id, itemTotal);
 
                     return (
-                      <tr key={item.id} className="border-black">
+                      <tr key={item._id} className="border-black">
                         <td className="border border-black">{item.Aname}</td>
                         <td className="border border-black">{item.au}</td>
                         <td className="border border-black">{item.month}</td>
                         <td className="border border-black">{item.quantity}</td>
                         <td className="border border-black">{item.amount}</td>
-                        <td className="border border-black">
-                          {itemTotal}
-                        </td>
+                        <td className="border border-black">{itemTotal}</td>
+                        <td className="border border-black space-y-1">
+                            <button
+                              className="px-2 py-1 bg-black text-yellow-400 mr-2 rounded-lg" 
+                              onClick={() => handleEditClick(item)}>
+                              Edit
+                            </button>
+                        </td> 
                       </tr>
                     );
                   })}
@@ -211,7 +276,84 @@ function Maintenance() {
             Close
           </button>
         </div>
+        {/* Edit modal */}
+        {editModalOpen && (
+          
+          <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-black bg-opacity-50">
+            <div className="bg-white p-4 ml-0 lg:ml-52 -mt-28 rounded-lg">
+              <h2 className="text-yellow-500 font-bold text-2xl mb-4">Edit Record</h2>
+              <div className="space-y-4">
+                <div className="space-x-6">
+                <label className="font-bold">Particulars:</label>
+                <input
+                  type="text"
+                  name="Aname"
+                  value={editFormData.Aname}
+                  onChange={handleEditInputChange}
+                  className="border-2 "
+                  placeholder="Particulars"
+                />
+                </div>
+                <div className="space-x-20">
+                <label className="font-bold">AU:</label>
+                <input
+                  type="text"
+                  name="au"
+                  value={editFormData.au}
+                  onChange={handleEditInputChange}
+                  className="border-2"
+                  placeholder="A/U"
+                />
+                </div>
+                <div className="space-x-12">
+                <label className="font-bold">Month:</label>
+                <input
+                  type="text"
+                  name="month"
+                  value={editFormData.month}
+                  onChange={handleEditInputChange}
+                  className="border-2"
+                  placeholder="Month"
+                />
+                </div>
+                <div className="space-x-8">
+                <label className="font-bold">Quantity:</label>
+                <input
+                  type="number"
+                  name="quantity"
+                  value={editFormData.quantity}
+                  onChange={handleEditInputChange}
+                  className="border-2"
+                  placeholder="Quantity"
+                />
+                </div>
+                <div className="space-x-10">
+                <label className="font-bold">Amount:</label>
+                <input
+                  type="number"
+                  name="amount"
+                  value={editFormData.amount}
+                  onChange={handleEditInputChange}
+                  className="border-2"
+                  placeholder="Amount"
+                />
+                </div>
+                <div className="flex justify-between">
+                  <button onClick={() => handleUpdateClick(editFormData.id)} className="mt-4 p-3 bg-black text-yellow-400 rounded-md font-semibold" >
+                    Update
+                  </button>
+                  <button onClick={handleEditModalClose} className="mt-4 p-3 bg-black rounded-md text-white font-semibold">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      
+
       </div>
+      
     );
   };
 
@@ -634,8 +776,10 @@ function Maintenance() {
           )}
           {/* Conditionally render ListDetails */}
           {ModalOpen && (
-            <ListDetails selectedMonthDetails={selectedMonthDetails} />
+            <ListDetails selectedMonthDetails={selectedMonthDetails}
+            branch={selectedBranch} />
           )}
+          
         </div>
       </div>
     </div>

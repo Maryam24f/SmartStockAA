@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import Us from "./Umain";
 import axios from "axios";
 import { useAuth } from "./AuthContext";
+import { CircleLoader } from 'react-spinners';
 function Umaintenance() {
   const navigate = useNavigate();
   const [isModalOpen, setModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { userBranch } = useAuth();
   const [Mlist, setMlist] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Fetch data from backend API when the component mounts
@@ -60,10 +62,14 @@ function Umaintenance() {
   };
 
   const handleSubmit = async (e) => {
+    
     const newdata = { ...formData, branch: userBranch, status: "" };
     e.preventDefault();
+    
     console.log(newdata);
     try {
+      setLoading(true);
+      console.log(loading)
       await axios.post("http://localhost:8000/maint", newdata, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -81,7 +87,9 @@ function Umaintenance() {
         bill: "", // Bill
         demand: "",
       });
+      setLoading(false);
       closeModal();
+
     } catch (error) {
       console.error("Error adding branch:", error);
     }
@@ -375,11 +383,12 @@ function Umaintenance() {
   const handleOpenClick = () => {
     setModalOpen(true);
   };
+  
 
   const closeModal = () => {
     setModalOpen(false);
   };
-
+  
   // /////modal///////
   const SubmitModal = ({ isOpen, onClose }) => {
     return (
@@ -397,6 +406,9 @@ function Umaintenance() {
                       <p className="text-gray-600">
                         Are you sure you want to submit request?
                       </p>
+                    </div>
+                    <div >
+                    {loading && <CircleLoader className="ml-40"></CircleLoader>}
                     </div>
                     <div className="space-y-4">
                       <button
@@ -551,6 +563,7 @@ function Umaintenance() {
           {showRequests && requests()}
         </div>
       </div>
+
       {/* Logout Modal */}
       <SubmitModal isOpen={isModalOpen} onClose={closeModal} className="" />
     </div>

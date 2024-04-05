@@ -34,14 +34,14 @@ const App = () => {
     if (userRole === 'admin'){
       return <> {children}</>
     }
-    return <div>u don't have access to this page</div>
+    return <div>You don't have access to this page</div>
    }
    ///////user check//////
    function User({children}){
     if (userRole === 'user'){
       return <> {children}</>
     }
-    return <div>u don't have access to this page</div>
+    return <div>You don't have access to this page</div>
    }
    ///////////
   return (

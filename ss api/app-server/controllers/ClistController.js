@@ -1,30 +1,29 @@
 const Clist = require("../modals/ClistSchema");
 const nodemailer = require("nodemailer");
 
-const createClist = async (req, res) => {
+const sendNotification = async(req,res) => {
+  console.log(req.body.branch)
+  const branch= req.body.branch;
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
       // TODO: replace `user` and `pass` values from <https://forwardemail.net>
       user: "mq5248224@gmail.com",
-      pass: "chrgaxefezkjctns",
+      pass: "enpc qcxo ukre ljqu",
     },
   });
   try {
-    const newList = new Clist(req.body);
-    await newList.save();
-    const { email } = req.body;
-
     // Create the email message
     const message = {
       from: 'mq5248224@gmail.com', // sender address
       to: 'mq5248224@gmail.com', // list of receivers
-      subject: "Received new notification", // Subject line
-      text: "you have received new request", // plain text body
-      html: "<b>you have received new request</b>", // html body
+      subject: `Received new request from ${branch} branch`, // Subject line
+      text: `You have received new list of monthly consumable assets for branch ${branch}. Open and check application for more details`, // plain text body
+      html: `<b>You have received new list of monthly consumable assets for branch ${branch}. Open and check application for more details</b>`, // html body
     };
     // Send email and handle errors
     await transporter.sendMail(message);
+    res.status(201).json(message);
      // Log the email message
     console.log(
       "Message sent: %s, url: %s",
@@ -32,10 +31,20 @@ const createClist = async (req, res) => {
       nodemailer.getTestMessageUrl(message)
     );
     console.log("Email Message:", message);
-
-    res.status(201).json(newList);
+    
   } catch (error) {
     console.error("Error sending email:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+
+}
+const createClist = async (req, res) => {
+  try {
+    const newList = new Clist(req.body);
+    await newList.save();
+    res.status(201).json(newList);
+  } catch (error) {
+    console.error( error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -104,6 +113,17 @@ const updateTotal = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// Update asset by ID
+const updateClist = async (req, res) => {
+  const assetId = req.params.id;
+  const trimmedId = assetId.trim();
+  try {
+    const updatedAsset = await Clist.findByIdAndUpdate(trimmedId, req.body, { new: true });
+    res.status(200).json(updatedAsset);
+  } catch (error) {
+    res.status(500).json({ Error: error.message });
+  }
+};
 
 module.exports = {
   createClist,
@@ -111,4 +131,6 @@ module.exports = {
   getDataByBranch,
   updateTotal,
   updateStatus,
+  sendNotification,
+  updateClist
 };

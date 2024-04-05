@@ -11,7 +11,7 @@ function AssetsList() {
   // Use the useLocation hook to get the current location
   const location = useLocation();
   const {
-    state: { category, catList, itList, fixList },
+    state: { category},
   } = location;
 
   const cat = category;
@@ -30,6 +30,7 @@ function AssetsList() {
       const response = await axios.get(
         `http://localhost:8000/assets/category/${cat}`
       );
+      console.log(response)
       setAssets(response.data);
       setFilteredData(response.data); // Assuming you want to show all data initially
     } catch (error) {
@@ -158,12 +159,16 @@ function AssetsList() {
     // Add or derive category and status based on your logic
     const category = String(cat); // Assuming cat is a variable passed from the previous page
     const status = "Not Allocated";
-
+ console.log(formData)
     // Assuming formData is an object
     const updatedFormData = {
       ...formData,
       category: category,
-      status: status,
+    };
+    const updatedFormData2 = {
+      ...formData,
+      category: category,
+      status: status
     };
 
     try {
@@ -173,14 +178,14 @@ function AssetsList() {
         // Update existing asset
         response = await axios.put(
           `http://localhost:8000/assets/update/${selectedAssetId}`,
-          updatedFormData,
-          fetchData()
+          updatedFormData, 
         );
+        fetchData()
       } else {
         // Add new asset
         response = await axios.post(
           "http://localhost:8000/assets",
-          updatedFormData
+          updatedFormData2
         );
       }
 
@@ -290,9 +295,10 @@ function AssetsList() {
         },
         // 
       );
-      // setAssets(response.data)
-      // setFilteredData(response.data)/
        fetchData()
+       setAssets(response.data)
+       setFilteredData(response.data)
+       
        console.log(assets)
 
       closeAllocationModal();
@@ -470,7 +476,7 @@ function AssetsList() {
               <tbody>
                 {(showHistory ? allocationHistory : filteredData).map(
                   (a, index) => (
-                    <tr key={a.id} className="border-black">
+                    <tr key={a._id} className="border-black">
                       <td
                         className="border border-black"
                         onClick={() => openDetailsModal(a)}

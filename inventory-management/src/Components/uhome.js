@@ -17,7 +17,6 @@ function Uhome() {
       Heading1: "",
       Heading2: "Assets",
     },
-
     {
       color: "bg-red-400",
       Heading1: "",
@@ -27,7 +26,7 @@ function Uhome() {
       color: "bg-pink-400",
       Heading1: "",
       Heading2: "Reports",
-    },
+    }
   ];
   // Mock data for mentenance
   const [ment, setMent] = useState([]);
@@ -187,7 +186,7 @@ const dataM = {
                   onClick={() => handleDivClick({ state: { currIndex } })}
                 >
                   <h1 className="text-white text-2xl">{Heading1}</h1>
-                  <h1 className="font-serif text-4xl text-white p-8 ">
+                  <h1 className="font-serif text-4xl text-white">
                     {Heading2}
                   </h1>
                 </div>

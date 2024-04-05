@@ -1,10 +1,11 @@
-import React, { useState, useEffect,useRef, useLayoutEffect } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Us from "./Umain";
 import Graph from "./graph";
-import Chart from "chart.js/auto"; 
+import Chart from "chart.js/auto";
 import { useAuth } from "./AuthContext";
 import axios from "axios";
+import { CircleLoader } from 'react-spinners';
 function Ureport() {
   const navigate = useNavigate();
   const [isModalOpen, setModalOpen] = useState(false);
@@ -15,31 +16,34 @@ function Ureport() {
   const [selectedRow, setSelectedRow] = useState(null); // State to track selected row for modal
   const [Rlist, setRlist] = useState([]);
   const { userBranch, userEmail } = useAuth();
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     // Fetch data from backend API when the component mounts
     fetchData();
   }, []);
 
   const fetchData = async () => {
-    console.log("user"+userBranch)
+    console.log("user" + userBranch);
     try {
-      const response = await axios.get(`http://localhost:8000/clist/${userBranch}`);
+      const response = await axios.get(
+        `http://localhost:8000/clist/${userBranch}`
+      );
       if (response.status === 200) {
         setRlist(response.data); // Update state with fetched data
       } else {
-        console.error('Failed to fetch data');
+        console.error("Failed to fetch data");
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     }
   };
 
   const [formData, setFormData] = useState({
     Aname: "", // Asset Type
     month: "", // Date
-    au:"",
+    au: "",
     quantity: "", // Cost
-    amount:""
+    amount: "",
   });
 
   const [showForm, setShowForm] = useState(true);
@@ -54,29 +58,33 @@ function Ureport() {
 
   const fetchList = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/assets/consumable`);
+      const response = await axios.get(
+        `http://localhost:8000/assets/consumable`
+      );
       console.log(response.data);
       if (response.status === 200) {
         // Remove duplicates based on asset name
         const uniqueAssets = response.data.reduce((acc, curr) => {
-          if (!acc.find(item => item.name === curr.name)) {
+          if (!acc.find((item) => item.name === curr.name)) {
             acc.push(curr);
           }
           return acc;
         }, []);
-  
+
         // Add "Other" option at the end
-        const assetsWithOtherOption = [...uniqueAssets, { _id: 'other', name: 'other' }];
-  
+        const assetsWithOtherOption = [
+          ...uniqueAssets,
+          { _id: "other", name: "other" },
+        ];
+
         setPredefinedItems(assetsWithOtherOption); // Update state with fetched data
       } else {
-        console.error('Failed to fetch data');
+        console.error("Failed to fetch data");
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     }
   };
-  
 
   // State to manage the selected item in the dropdown
   const [selectedItem, setSelectedItem] = useState("");
@@ -94,44 +102,59 @@ function Ureport() {
     setRlist(updatedRow);
   };
 
-  const handleSubmit =async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newdata = { 
-      ...formData, 
-      email: userEmail, 
-      branch: userBranch, 
-      Aname:(selectedItem==="other" ? otherItem :selectedItem)
-      };
+    const newdata = {
+      ...formData,
+      email: userEmail,
+      branch: userBranch,
+      Aname: selectedItem === "other" ? otherItem : selectedItem,
+    };
     e.preventDefault();
-    console.log(newdata)
+    console.log(newdata);
     try {
       await axios.post("http://localhost:8000/clist", newdata);
       setFormData({
         Aname: "", // Asset Type
         month: "", // Date
-        au:"",
+        au: "",
         quantity: "", // Cost
-        amount:""
-        });
+        amount: "",
+      });
       fetchData(); // Refetch branches after adding new branch
-      setSelectedItem("")
-      setOtherItem("")
+      setSelectedItem("");
+      setOtherItem("");
       closeModal();
-      
     } catch (error) {
       console.error("Error adding branch:", error);
     }
-    
+  };
+  const handleSent = async (e) => {
+    e.preventDefault();
+    const branch = userBranch;
+    console.log(branch);
+    try {
+      setLoading(true);
+      console.log(loading)
+      await axios.post("http://localhost:8000/clist/send", { branch });
+      console.log("Request sent successfully");
+      console.log("ModalOpen before setting to false:", ModalOpen);
+      setLoading(false);
+      setModal(false);
+      console.log("ModalOpen after setting to false:", ModalOpen);
+    } catch (error) {
+      console.error("Error adding branch:", error);
+    }
   };
 
   const handleCancelUpdate = () => {
     setFormData({
-    branch: "", // Branch Name
-    Aname: "", // Asset Type
-    month: "", // Date
-    au:"",
-    quantity: "", // Cost
-    amount:""
+      branch: "", // Branch Name
+      Aname: "", // Asset Type
+      month: "", // Date
+      au: "",
+      quantity: "", // Cost
+      amount: "",
     });
   };
 
@@ -143,12 +166,10 @@ function Ureport() {
     }));
   };
 
-
   const handleSubmitForm = (e) => {
     e.preventDefault();
     handleOpenClick();
   };
-   
 
   const handleItemChange = (e) => {
     const { value } = e.target;
@@ -163,13 +184,12 @@ function Ureport() {
     const { value } = e.target;
     setOtherItem(value);
   };
-  
 
   function form() {
     return (
       <form onSubmit={handleSubmitForm}>
         <div className="grid gap-6 mb-6 mt-4 md:mt-12 lg:mt-14 lg:grid-cols-2 md:grid-cols-2 sm:ml-8 sm:mr-8 lg:ml-32 lg:mr-32 md:ml-32 md:mr-32">
-        <div>
+          <div>
             <label
               htmlFor="AType"
               className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
@@ -236,8 +256,8 @@ function Ureport() {
               placeholder="2"
               required
             />
-           </div>
-           <div>
+          </div>
+          <div>
             <label
               htmlFor="cost"
               className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
@@ -254,8 +274,8 @@ function Ureport() {
               placeholder="2"
               required
             />
-           </div>
-           <div>
+          </div>
+          <div>
             <label
               htmlFor="au"
               className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
@@ -272,15 +292,14 @@ function Ureport() {
               placeholder="rim"
               required
             />
-           </div>
-           
-           </div>
-          <div className="sm:ml-8 sm:mr-8 lg:ml-32 lg:mr-32 md:ml-32 md:mr-32">
+          </div>
+        </div>
+        <div className="sm:ml-8 sm:mr-8 lg:ml-32 lg:mr-32 md:ml-32 md:mr-32">
           <button
             type="submit"
             className="px-2 py-2 transition rounded-lg text-black bg-yellow-500 hover:bg-white hover:text-gray-800 border-2 border-gray-200 focus:outline-none"
           >
-            Sent
+            Add
           </button>
           <button
             type="button"
@@ -298,51 +317,96 @@ function Ureport() {
     setSelectedMonthDetails(selectedData);
     setModal(true);
   };
-  
+
   //////list details//////
   const ListDetails = ({ selectedMonthDetails }) => {
     return (
       <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-black bg-opacity-50">
         <div className="bg-white p-4 -mt-60 rounded-lg max-w-4xl w-full sm:w-11/12">
-          <h2 className="text-yellow-500 font-bold text-2xl mb-4">List Details</h2>
+          <h2 className="text-yellow-500 font-bold text-2xl mb-4">
+            List Details
+          </h2>
           <div className="overflow-x-auto">
-           <div className="max-h-96 overflow-auto">
-            <table className="min-w-full divide-y divide-gray-200 border-2 border-black shadow-md bg-white rounded-md">
-              <thead className="border border-black">
-                <tr className="text-black font-bold">
-                  <th className="border border-black">Particulars</th>
-                  <th className="border border-black">A/U</th>
-                  <th className="border border-black">Month</th>
-                  <th className="border border-black">Quantity</th>
-                  <th className="border border-black">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedMonthDetails && selectedMonthDetails.map((item) => (
-                  <tr key={item.id} className="border-black">
-                    <td className="border border-black">{item.Aname}</td>
-                    <td className="border border-black">{item.au}</td>
-                    <td className="border border-black">{item.month}</td>
-                    <td className="border border-black">{item.quantity}</td>
-                    <td className="border border-black">{item.amount}</td>
+            <div className="max-h-96 overflow-auto">
+              <table className="min-w-full divide-y divide-gray-200 border-2 border-black shadow-md bg-white rounded-md">
+                <thead className="border border-black">
+                  <tr className="text-black font-bold">
+                    <th className="border border-black">Particulars</th>
+                    <th className="border border-black">A/U</th>
+                    <th className="border border-black">Month</th>
+                    <th className="border border-black">Quantity</th>
+                    <th className="border border-black">Amount</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {selectedMonthDetails &&
+                    selectedMonthDetails.map((item) => (
+                      <tr key={item.id} className="border-black">
+                        <td className="border border-black">{item.Aname}</td>
+                        <td className="border border-black">{item.au}</td>
+                        <td className="border border-black">{item.month}</td>
+                        <td className="border border-black">{item.quantity}</td>
+                        <td className="border border-black">{item.amount}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
             </div>
           </div>
-          <button onClick={() => setModal(false)} className="mt-4 p-3 bg-black rounded-md text-white w-full font-semibold">Close</button>
+          <div className="justify-center" >
+                    {loading && <CircleLoader className="ml-40"></CircleLoader>}
+            </div>
+          <div
+            className="flex-col-2 space-x-2"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            
+            {selectedMonthDetails &&
+            selectedMonthDetails.some(
+              (item) =>
+                item.status === "Accepted" ||
+                item.status === "Rejected" ||
+                item.status === "In process"
+            ) ? (
+              <button
+                onClick={() => setModal(false)}
+                className="mt-4 p-3 bg-black rounded-md text-white w-1/3 font-semibold"
+              >
+                Close
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={handleSent}
+                  className="mt-4 p-3 bg-yellow-600 rounded-md text-black w-1/3 font-semibold"
+                >
+                  Sent
+                </button>
+                <button
+                  onClick={() => setModal(false)}
+                  className="mt-4 p-3 bg-black rounded-md text-white w-1/3 font-semibold"
+                >
+                  Close
+                </button>
+              </>
+            )}
+             
+          </div>
         </div>
       </div>
     );
   };
-  
+
   //////modal//////
-  const handleOpenClick = () =>{
+  const handleOpenClick = () => {
     setModalOpen(true);
   };
 
-  const closeModal = () =>{
+  const closeModal = () => {
     setModalOpen(false);
   };
 
@@ -362,7 +426,7 @@ function Ureport() {
                         Report Confirmation
                       </h1>
                       <p className="text-gray-600">
-                        Are you sure you want to submit report?
+                        Are you sure you want to add asset in list?
                       </p>
                     </div>
                     <div className="space-y-4">
@@ -370,7 +434,7 @@ function Ureport() {
                         onClick={handleSubmit}
                         className="p-3 bg-black rounded-full text-white w-full font-semibold"
                       >
-                        Yes, send
+                        Yes, Add
                       </button>
                       <button
                         onClick={onClose}
@@ -390,38 +454,31 @@ function Ureport() {
   };
 
   function requests() {
-    
-  
-      /////search/////
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-};
+    /////search/////
+    const handleSearch = (query) => {
+      setSearchQuery(query);
+    };
 
-const filteredData = Rlist.filter((M) => {
-const searchFields = [
-M.month
-]
-return searchFields.some((field) => {
-if (typeof field === 'string') {
-return field.toLowerCase().includes(searchQuery.toLowerCase());
-}
-return false; // Return false for non-string fields
-});
-});
+    const filteredData = Rlist.filter((M) => {
+      const searchFields = [M.month];
+      return searchFields.some((field) => {
+        if (typeof field === "string") {
+          return field.toLowerCase().includes(searchQuery.toLowerCase());
+        }
+        return false; // Return false for non-string fields
+      });
+    });
 
-  // Create a Set to keep track of unique months from the filtered data
-  const uniqueMonths = new Set(filteredData.map((item) => item.month));
-
-    
+    // Create a Set to keep track of unique months from the filtered data
+    const uniqueMonths = new Set(filteredData.map((item) => item.month));
     // Function to get the status for a given month
-  const getStatusForMonth = (month) => {
-    // Find the row in Rlist corresponding to the given month
-    const row = Rlist.find((item) => item.month === month);
+    const getStatusForMonth = (month) => {
+      // Find the row in Rlist corresponding to the given month
+      const row = Rlist.find((item) => item.month === month);
+      // Return the status if the row is found, otherwise return null or an appropriate default value
+      return row ? row.status : "No Status"; // Change 'status' to the actual property name containing the status value
+    };
 
-    // Return the status if the row is found, otherwise return null or an appropriate default value
-    return row ? row.status : 'No Status'; // Change 'status' to the actual property name containing the status value
-  };
-  
     return (
       <div className="overflow-x-auto space-y-2 mt-4 sm:ml-8 sm:mr-8 lg:ml-32 lg:mr-32 md:ml-32 md:mr-32">
         <div className="mt-1 flex justify-start">
@@ -438,6 +495,7 @@ return false; // Return false for non-string fields
             <tr className="bg-black text-yellow-400 font-bold">
               <td className="border border-black">Month</td>
               <td className="border border-black">Status</td>
+              <td className="border border-black">Note</td>
             </tr>
           </thead>
           <tbody>
@@ -453,7 +511,7 @@ return false; // Return false for non-string fields
                 {/* Render status (if any) */}
                 {/* You may need to modify this part according to your data structure */}
                 <td className="border border-black">
-                <div
+                  <div
                     className={`m-2 w-fit text-black text-xl font-serif pl-2 pr-2 h-fit rounded-lg 
                      ${(() => {
                        switch (getStatusForMonth(month)) {
@@ -469,16 +527,26 @@ return false; // Return false for non-string fields
                      })()}`}
                   >
                     {getStatusForMonth(month)}
-                  </div>               
-              </td>
-            </tr>
-          ))}
+                  </div>
+                </td>
+                <td className="border border-black font-sans">
+                  {getStatusForMonth(month) === "Rejected" ||
+                  getStatusForMonth(month) === "Accepted" ||
+                  getStatusForMonth(month) === "In process" ? (
+                    <div className="font-sans bg-yellow-500">
+                      <h>Check the list to conform if modified by the admin</h>
+                    </div>
+                  ) : (
+                    <div></div>
+                  )}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
     );
   }
-  
 
   return (
     <div className="h-screen">
@@ -495,15 +563,13 @@ return false; // Return false for non-string fields
                 console.log(showForm);
               }
               setShowRequests(false);
-              setshowGrap(false)
+              setshowGrap(false);
             }}
             className="justify-center cursor-pointer items-center p-2 mt-10 rounded-xl group sm:flex border hover:border-gray-200 space-x-0 text-black bg-yellow-500  shadow-xl hover:bg-yellow-400 hover:text-black"
           >
             <div className="sm:w-auto">
               <div className="space-y-4">
-                <h4 className="text-2xl font-semibold">
-                  List Data
-                </h4>
+                <h4 className="text-2xl font-semibold">List Data</h4>
               </div>
             </div>
           </div>
@@ -518,9 +584,7 @@ return false; // Return false for non-string fields
           >
             <div className="sm:w-auto">
               <div className="space-y-4">
-                <h4 className="text-2xl font-semibold">
-                  List
-                </h4>
+                <h4 className="text-2xl font-semibold">List</h4>
               </div>
             </div>
           </div>
@@ -532,15 +596,13 @@ return false; // Return false for non-string fields
                 console.log(showGraph);
               }
               setShowRequests(false);
-              setShowForm(false)
+              setShowForm(false);
             }}
             className="justify-center cursor-pointer items-center p-2 mt-4 lg:mt-10 rounded-xl group sm:flex border hover:border-gray-200 space-x-0 text-black bg-yellow-500  shadow-xl hover:bg-yellow-400 hover:text-black"
           >
             <div className="sm:w-auto">
               <div className="space-y-4">
-                <h4 className="text-2xl font-semibold">
-                 View Report
-                </h4>
+                <h4 className="text-2xl font-semibold">View Report</h4>
               </div>
             </div>
           </div>
@@ -549,7 +611,9 @@ return false; // Return false for non-string fields
           {showForm && form()}
           {showRequests && requests()}
           {/* Render ListDetails component only when selectedMonthDetails is not null */}
-          {ModalOpen && <ListDetails selectedMonthDetails={selectedMonthDetails} />}
+          {ModalOpen && (
+            <ListDetails selectedMonthDetails={selectedMonthDetails} />
+          )}
           {showGraph && <Graph></Graph>}
         </div>
       </div>
@@ -558,5 +622,4 @@ return false; // Return false for non-string fields
     </div>
   );
 }
-
 export default Ureport;

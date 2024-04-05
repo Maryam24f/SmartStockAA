@@ -9,7 +9,10 @@ const asset = new mongoose.Schema({
     category: {type: String, required:false },
     quantity: {type: Number, required: false },
     status: { type: String, required: false },
-    // Other asset-related fields
+    pdf: {
+        data: Buffer, // Store the file data
+        contentType: String // Store the MIME type of the file
+    },
 });
 
 module.exports = mongoose.model('Asset', asset);

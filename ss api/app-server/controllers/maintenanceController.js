@@ -1,25 +1,26 @@
 const Maint = require('../modals/maintSchema');
-
+const nodemailer = require("nodemailer");
 // Controller function to create new data
 const createMaint = async (req, res) => {
+    const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: "mq5248224@gmail.com",
+            pass: "enpc qcxo ukre ljqu",
+        },
+    });
+
     try {
-        // Extract data from the request body
         const { name, type, tag, demand, date, branch, category, supplier, cost, status } = req.body;
         
-        // Check if a file is included in the request
         let bill;
-        console.log(req.file);
-        console.log("buffer"+ req.file.buffer)
-        
         if (req.file) {
-            // If a file is included, set the bill field to the file data
             bill = {
-                data: req.file.buffer, // Assuming you're using multer for file uploads
+                data: req.file.buffer,
                 contentType: req.file.mimetype
             };
         }
 
-        // Create a new instance of the Maintenance model
         const newList = new Maint({
             name,
             type,
@@ -30,17 +31,31 @@ const createMaint = async (req, res) => {
             category,
             supplier,
             cost,
-            bill, // Set the bill field with the file data
+            bill,
             status
         });
 
-        // Save the new data to the database
         await newList.save();
 
+        // Create the email message
+        const message = {
+            from: 'mq5248224@gmail.com',
+            to: 'mq5248224@gmail.com',
+            subject: `Received new request from ${branch} branch`,
+            text: `You have received new request of assets for branch ${branch}. Open and check application for more details`,
+            html: `<b>You have received new request of assets for branch ${branch}. Open and check application for more details</b>`,
+        };
+
+        // Send email and handle errors
+        await transporter.sendMail(message);
+
+        // Log the email message
+        console.log("Message sent: %s, url: %s", message.messageId, nodemailer.getTestMessageUrl(message));
+        console.log("Email Message:", message);
+
         // Return a success response with the created data
-        res.status(201).json(newList);
+        res.status(201).json({ newList, message }); // Merge newList and message into a single JSON response
     } catch (error) {
-        // Return an error response if there's any error
         console.error('Error:', error);
         res.status(500).json({ error: error.message });
     }

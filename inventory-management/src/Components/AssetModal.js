@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 const AssetModal = ({ isOpen, closeModal, onSave, formData, setFormData,categ }) => {
+  const [pdfFile, setPdfFile] = useState(null);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({
@@ -11,6 +12,10 @@ const AssetModal = ({ isOpen, closeModal, onSave, formData, setFormData,categ })
   const handleSubmit = (e) => {
     e.preventDefault(); // Prevent default form submission behavior
     onSave();
+  };
+  const handlePdfUpload = (e) => {
+    const file = e.target.files[0];
+    setPdfFile(file);
   };
 
   return (
@@ -129,6 +134,20 @@ const AssetModal = ({ isOpen, closeModal, onSave, formData, setFormData,categ })
                       onChange={handleInputChange}
                       className='mt-1 p-2 w-full border rounded-md'
                       placeholder='Enter branch'
+                      required
+                    />
+                  </div>
+                  <div className='mb-4'>
+                    <label htmlFor='pdfFile' className='block text-sm font-medium text-gray-700'>
+                      Upload File
+                    </label>
+                    <input
+                      type='file'
+                      id='pdfFile'
+                      name='pdfFile'
+                      onChange={handlePdfUpload}
+                      className='mt-1 p-2 w-full border rounded-md'
+                      accept='.pdf'
                       required
                     />
                   </div>

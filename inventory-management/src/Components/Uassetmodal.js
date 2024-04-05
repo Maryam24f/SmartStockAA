@@ -34,14 +34,14 @@ const UassetModal = ({ isOpen, closeModal, onSave, formData, setFormData,categ }
                 <form onSubmit={onSave}>
                   {/* Your form input fields go here */}
                   <div className='mb-4'>
-                    <label htmlFor='assetname' className='block text-sm font-medium text-gray-700'>
+                    <label htmlFor='name' className='block text-sm font-medium text-gray-700'>
                       Asset Name
                     </label>
                     <input
                       type='text'
-                      id='assetname'
-                      name='assetname'
-                      value={formData.assetname}
+                      id='name'
+                      name='name'
+                      value={formData.name}
                       onChange={handleInputChange}
                       className='mt-1 p-2 w-full border rounded-md'
                       placeholder='Enter asset name'
@@ -66,14 +66,14 @@ const UassetModal = ({ isOpen, closeModal, onSave, formData, setFormData,categ }
                     </div>
                   ) : (
                     <div className='mb-4'>
-                      <label htmlFor='assetTag' className='block text-sm font-medium text-gray-700'>
+                      <label htmlFor='tag' className='block text-sm font-medium text-gray-700'>
                         Asset Tag
                       </label>
                       <input
                         type='text'
-                        id='assetTag'
-                        name='assetTag'
-                        value={formData.assetTag}
+                        id='tag'
+                        name='tag'
+                        value={formData.tag}
                         onChange={handleInputChange}
                         className='mt-1 p-2 w-full border rounded-md'
                         placeholder='Enter asset tag'
@@ -113,7 +113,7 @@ const UassetModal = ({ isOpen, closeModal, onSave, formData, setFormData,categ }
                     />
                   </div>
 
-                  <div className='mb-4'>
+                  {/* <div className='mb-4'>
                     <label htmlFor='branch' className='block text-sm font-medium text-gray-700'>
                     Branch
                     </label>
@@ -127,12 +127,12 @@ const UassetModal = ({ isOpen, closeModal, onSave, formData, setFormData,categ }
                       placeholder='Enter branch'
                       required
                     />
-                  </div>
+                  </div> */}
                   
                   <div className='flex items-center justify-end'>
                     <button
                       type='submit'
-                      className='px-2 py-2 transition rounded-lg bg-gray-600 text-white hover:bg-white hover:text-gray-800 border-2 border-gray-200 focus:outline-none'
+                      className="justify-start mt-4 px-2 py-2 transition rounded-lg bg-black text-yellow-400 hover:bg-white hover:text-gray-800 border-2 border-gray-200 focus:outline-none"
                     >
                       Save
                     </button>

@@ -164,7 +164,7 @@ function Dashboard() {
 
                       >
                         <h1 className="text-white text-2xl">{Heading1}</h1>
-                        <h1 className="font-serif text-4xl text-white p-8">
+                        <h1 className="font-serif text-4xl text-white">
                           {Heading2}
                         </h1>
                       </div>
