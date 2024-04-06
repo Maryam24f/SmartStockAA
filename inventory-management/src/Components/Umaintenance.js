@@ -11,24 +11,25 @@ function Umaintenance() {
   const { userBranch } = useAuth();
   const [Mlist, setMlist] = useState([]);
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
     // Fetch data from backend API when the component mounts
     fetchData();
   }, []);
 
   const fetchData = async () => {
-    console.log("user" + userBranch);
+  
     try {
+      setLoading(true);
       const response = await axios.get(
         `http://localhost:8000/maint/${userBranch}`
       );
-      console.log(response.data);
+   
       if (response.status === 200) {
         setMlist(response.data); // Update state with fetched data
       } else {
         console.error("Failed to fetch data");
       }
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -62,14 +63,12 @@ function Umaintenance() {
   };
 
   const handleSubmit = async (e) => {
-    
     const newdata = { ...formData, branch: userBranch, status: "" };
     e.preventDefault();
-    
-    console.log(newdata);
+   
     try {
       setLoading(true);
-      console.log(loading)
+    
       await axios.post("http://localhost:8000/maint", newdata, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -89,7 +88,6 @@ function Umaintenance() {
       });
       setLoading(false);
       closeModal();
-
     } catch (error) {
       console.error("Error adding branch:", error);
     }
@@ -120,7 +118,7 @@ function Umaintenance() {
 
   const handleFileInputChange = (e) => {
     const file = e.target.files[0];
-    console.log(e.target.files[0]);
+  
     // Do something with the file, like setting it in the form data
     setFormData((prevFormData) => ({
       ...prevFormData,
@@ -134,13 +132,13 @@ function Umaintenance() {
 
   const openImageInNewWindow = (bill) => {
     const { contentType, data } = bill;
-    console.log("Image Data:", bill);
+  
 
     // Convert data to base64
     const fileReader = new FileReader();
     fileReader.onloadend = () => {
       const base64Data = fileReader.result;
-      console.log("Base64 Data:", base64Data);
+    
 
       // Open image in new window
       const newWindow = window.open();
@@ -151,6 +149,7 @@ function Umaintenance() {
     const blob = new Blob([new Uint8Array(data.data)], { type: contentType });
     fileReader.readAsDataURL(blob);
   };
+   
 
   function form() {
     return (
@@ -217,7 +216,7 @@ function Umaintenance() {
               onChange={handleInputChange}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
               placeholder="Enter asset tag"
-              required
+              
             />
           </div>
 
@@ -255,7 +254,7 @@ function Umaintenance() {
               onChange={handleInputChange}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
               placeholder="Enter supplier"
-              required
+              
             />
           </div>
 
@@ -292,7 +291,7 @@ function Umaintenance() {
               onChange={handleInputChange}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
               placeholder="Enter cost"
-              required
+              
             />
           </div>
 
@@ -310,7 +309,7 @@ function Umaintenance() {
               accept="image/*"
               onChange={handleFileInputChange}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-gray-500 dark:focus:border-gray-500"
-              required
+              
             />
           </div>
 
@@ -383,12 +382,11 @@ function Umaintenance() {
   const handleOpenClick = () => {
     setModalOpen(true);
   };
-  
 
   const closeModal = () => {
     setModalOpen(false);
   };
-  
+
   // /////modal///////
   const SubmitModal = ({ isOpen, onClose }) => {
     return (
@@ -446,6 +444,9 @@ function Umaintenance() {
             className="p-2 border border-gray-300 rounded-md"
           />
         </div>
+        <div >
+                    {loading && <CircleLoader className="ml-40"></CircleLoader>}
+        </div>
         <table className="min-w-full divide-y divide-gray-200 border-2 border-gray-200 shadow-md bg-white rounded-md">
           <thead className="border border-black">
             <tr className="bg-black text-yellow-400 font-bold">
@@ -475,7 +476,8 @@ function Umaintenance() {
                 <td className="border border-black">{row.date}</td>
                 <td className="border border-black">{row.cost}</td>
                 <td className="border border-black">
-                  <td className="border border-black">
+                {row.bill!= null?
+                <td className="border border-black">
                     <a href="#" onClick={() => openImageInNewWindow(row.bill)}>
                       <img
                         src={`data:${row.bill.contentType};base64,${btoa(
@@ -486,7 +488,9 @@ function Umaintenance() {
                         alt="Bill"
                       />
                     </a>
-                  </td>
+                  </td>:
+                  <td>Null</td>
+                  }
                 </td>
 
                 <td className="border border-black">{row.demand}</td>
@@ -528,9 +532,6 @@ function Umaintenance() {
           <div
             onClick={() => {
               setShowForm(true);
-              {
-                console.log(showForm);
-              }
               setShowRequests(false);
             }}
             className="justify-center cursor-pointer items-center p-2 mt-10 rounded-xl group sm:flex border hover:border-gray-200 space-x-0 text-black bg-yellow-500 shadow-xl hover:bg-yellow-400 hover:text-black"
@@ -563,7 +564,6 @@ function Umaintenance() {
           {showRequests && requests()}
         </div>
       </div>
-
       {/* Logout Modal */}
       <SubmitModal isOpen={isModalOpen} onClose={closeModal} className="" />
     </div>

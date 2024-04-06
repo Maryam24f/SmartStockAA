@@ -357,7 +357,7 @@ function UassetsList() {
         onSave={handleSaveAsset}
         formData={formData}
         setFormData={setFormData}
-        categ={cat}
+        categ={category}
       />
       {/* Render the allocation modal */}
       {/* <AssetAllocationModal

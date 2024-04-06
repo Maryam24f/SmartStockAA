@@ -8,6 +8,10 @@ const UassetModal = ({ isOpen, closeModal, onSave, formData, setFormData,categ }
     }));
   };
   console.log(categ);
+  const handleSubmit = (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+    onSave();
+  };
 
   return (
     <>
@@ -31,7 +35,7 @@ const UassetModal = ({ isOpen, closeModal, onSave, formData, setFormData,categ }
             <div className='inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6'>
               <div>
                 <h2 className='text-2xl font-semibold mb-4'>Asset Details</h2>
-                <form onSubmit={onSave}>
+                <form onSubmit={handleSubmit}>
                   {/* Your form input fields go here */}
                   <div className='mb-4'>
                     <label htmlFor='name' className='block text-sm font-medium text-gray-700'>
@@ -48,7 +52,7 @@ const UassetModal = ({ isOpen, closeModal, onSave, formData, setFormData,categ }
                       required
                     />
                   </div>
-                  {categ === 'Consumable Assets' ? (
+                  {categ === 'consumable' ? (
                     <div className='mb-4'>
                       <label htmlFor='quantity' className='block text-sm font-medium text-gray-700'>
                         Quantity
@@ -132,7 +136,7 @@ const UassetModal = ({ isOpen, closeModal, onSave, formData, setFormData,categ }
                   <div className='flex items-center justify-end'>
                     <button
                       type='submit'
-                      className="justify-start mt-4 px-2 py-2 transition rounded-lg bg-black text-yellow-400 hover:bg-white hover:text-gray-800 border-2 border-gray-200 focus:outline-none"
+                      className="justify-start  px-2 py-2 transition rounded-lg bg-black text-yellow-400 hover:bg-white hover:text-gray-800 border-2 border-gray-200 focus:outline-none"
                     >
                       Save
                     </button>

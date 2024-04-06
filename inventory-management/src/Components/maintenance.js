@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import SideBar from "./main";
 import Profile from "./profile";
 import axios from "axios";
+import { CircleLoader } from 'react-spinners';
 function Maintenance() {
   const [Rlist, setRlist] = useState([]);
   const [totalSum, setTotalSum] = useState(0);
@@ -9,6 +10,7 @@ function Maintenance() {
   const [total, setTotal] = useState(0);
   const [activeTab, setActiveTab] = useState("requests"); 
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     // Fetch data from backend API when the component mounts
     fetchData();
@@ -16,32 +18,36 @@ function Maintenance() {
   }, []);
 
   const fetchData = async () => {
-  try {
-    const response = await fetch("http://localhost:8000/clist");
-    if (response.ok) {
-      const data = await response.json();
-      setRlist(data); // Update state with fetched data
-      console.log(Rlist);
-    } else {
-      console.error("Failed to fetch data");
-    }
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  }
-};
-
-  const fetchMaint = async () => {
     try {
-      const response = await fetch("http://localhost:8000/maint"); // Adjust the URL based on your backend setup
+      setLoading(true);
+      const response = await fetch("http://localhost:8000/clist"); // Adjust the URL based on your backend setup
       if (response.ok) {
-        const maint = await response.json();
-        console.log("maintenance: "+maint)
-        setData(maint); // Update state with fetched data
-        setFilteredData(maint);
-        console.log(data);
+        const data = await response.json();
+        setRlist(data);
+        
       } else {
         console.error("Failed to fetch data");
       }
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  const fetchMaint = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("http://localhost:8000/maint"); // Adjust the URL based on your backend setup
+      if (response.ok) {
+        const maint = await response.json();
+       
+        setData(maint); // Update state with fetched data
+        setFilteredData(maint);
+        
+      } else {
+        console.error("Failed to fetch data");
+      }
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -56,7 +62,7 @@ function Maintenance() {
   // State to manage the status for each month-branch combination
   const [statusByMonthBranch, setStatusByMonthBranch] = useState({});
   useEffect(() => {
-    console.log("Updated statusByMonthBranch:", statusByMonthBranch);
+    
   }, [statusByMonthBranch]);
 
   useEffect(() => {
@@ -97,22 +103,20 @@ function Maintenance() {
   const getStatusForMonthAndBranch = (month, branch) => {
     // Check if the status exists for the given month and branch combination
     const statusKey = `${month}-${branch}`;
-    console.log("Checking status for key:", statusKey);
+
 
     if (statusByMonthBranch[statusKey]) {
-      console.log("Status found:", statusByMonthBranch[statusKey]);
+    
       return statusByMonthBranch[statusKey];
     }
 
-    // If status does not exist, return an empty string or a default value
-    console.log("Status not found, returning default value.");
     return "";
   };
   // useEffect(() => {
-  //   console.log("id" + totalId + "nmbr" + total);
+  
   //   updateTotalById(totalId, total);
   // }, [totalId, total]);
-  const [dataUpdated, setDataUpdated] = useState(false);
+
   // Function to update total by ID
   const updateTotalById = async (id, total) => {
     try {
@@ -120,7 +124,7 @@ function Maintenance() {
         `http://localhost:8000/clist/updateTotal/${id}/${total}`,
         { total }
       );
-      console.log("Total updated:", response.data);
+    
     } catch (error) {
       console.error("Error updating total:", error);
     }
@@ -134,7 +138,7 @@ function Maintenance() {
         branch,
         totalSum,
       });
-      console.log("TotalSum updated successfully");
+    
     } catch (error) {
       console.error("Error updating totalSum:", error);
     }
@@ -165,7 +169,7 @@ const [selectedRowData, setSelectedRowData] = useState(null);
 
 /// Function to handle opening the edit modal
 const handleEditClick = (rowData) => {
-  console.log("edit123: " + rowData._id)
+ 
   // Set the data of the row being edited to the edit form data state
   setEditFormData({
     id: rowData._id,
@@ -187,7 +191,7 @@ const handleEditModalClose = () => {
   // Function to handle updating the record in the database
   const handleUpdateClick = async (id) => {
     try {
-      console.log(id)
+    
       // Make a PUT request using Axios to update the record in the backend
       await axios.post(`http://localhost:8000/clist/update/${id}`, editFormData); // Remove editRowId
 
@@ -222,6 +226,9 @@ const handleEditModalClose = () => {
           </h2>
           <div className="overflow-x-auto">
           <div className="max-h-96 overflow-auto">
+          <div >
+                    {loading && <CircleLoader className="ml-40"></CircleLoader>}
+        </div>
             <table className="min-w-full divide-y divide-gray-200 border-2 border-black shadow-md bg-white rounded-md">
               <thead className="border border-black">
                 <tr className="text-black font-bold">
@@ -290,7 +297,7 @@ const handleEditModalClose = () => {
                   name="Aname"
                   value={editFormData.Aname}
                   onChange={handleEditInputChange}
-                  className="border-2 "
+                  className="input-field border-2 "
                   placeholder="Particulars"
                 />
                 </div>
@@ -301,7 +308,7 @@ const handleEditModalClose = () => {
                   name="au"
                   value={editFormData.au}
                   onChange={handleEditInputChange}
-                  className="border-2"
+                  className="input-field border-2"
                   placeholder="A/U"
                 />
                 </div>
@@ -312,7 +319,7 @@ const handleEditModalClose = () => {
                   name="month"
                   value={editFormData.month}
                   onChange={handleEditInputChange}
-                  className="border-2"
+                  className="input-field border-2"
                   placeholder="Month"
                 />
                 </div>
@@ -323,7 +330,7 @@ const handleEditModalClose = () => {
                   name="quantity"
                   value={editFormData.quantity}
                   onChange={handleEditInputChange}
-                  className="border-2"
+                  className="input-field border-2"
                   placeholder="Quantity"
                 />
                 </div>
@@ -334,7 +341,7 @@ const handleEditModalClose = () => {
                   name="amount"
                   value={editFormData.amount}
                   onChange={handleEditInputChange}
-                  className="border-2"
+                  className="input-field border-2"
                   placeholder="Amount"
                 />
                 </div>
@@ -419,14 +426,12 @@ const handleEditModalClose = () => {
   };
   const openImageInNewWindow = (bill) => {
     const { contentType, data } = bill;
-    console.log("Image Data:", bill);
 
     // Convert data to base64
     const fileReader = new FileReader();
     fileReader.onloadend = () => {
       const base64Data = fileReader.result;
-      console.log("Base64 Data:", base64Data);
-
+    
       // Open image in new window
       const newWindow = window.open();
       newWindow.document.write(`<img className="w-20 h-9" src="${base64Data}" alt="Bill" />`);
@@ -466,7 +471,7 @@ const handleEditModalClose = () => {
     };
 
     // Update the data state with the new data
-    setData([, newData, ...data]);
+    setData([ newData, ...data]);
 
     // Clear the form input values
     setFormData({
@@ -597,7 +602,12 @@ const handleEditModalClose = () => {
           )}
           {/* Display your table */}
           {activeTab === "requests" ? (
+            
             <div className="overflow-x-auto">
+            <div>
+            <div >
+                    {loading && <CircleLoader className="ml-40"></CircleLoader>}
+              </div>
               <table className="min-w-full divide-y divide-gray-200 border-2 border-black shadow-md bg-white rounded-md">
                 <thead className="border border-black">
                   <tr className="bg-black text-yellow-500 font-bold">
@@ -625,6 +635,7 @@ const handleEditModalClose = () => {
                       <td className="border border-black">{row.supplier}</td>
                       <td className="border border-black">{row.date}</td>
                       <td className="border border-black">{row.cost}</td>
+                      {row.bill!= null?
                       <td className="border border-black">
                       <a href="#" onClick={() => openImageInNewWindow(row.bill)}>
                       <img
@@ -636,7 +647,9 @@ const handleEditModalClose = () => {
                         alt="Bill"
                       />
                     </a>
-                      </td>
+                      </td>:
+                      <td>Null</td>
+                          }
 
                       <td className="border border-black">{row.demand}</td>
                       <td className="border border-black pl-2">
@@ -688,6 +701,7 @@ const handleEditModalClose = () => {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -779,7 +793,6 @@ const handleEditModalClose = () => {
             <ListDetails selectedMonthDetails={selectedMonthDetails}
             branch={selectedBranch} />
           )}
-          
         </div>
       </div>
     </div>

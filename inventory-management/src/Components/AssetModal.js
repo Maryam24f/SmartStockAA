@@ -137,7 +137,7 @@ const AssetModal = ({ isOpen, closeModal, onSave, formData, setFormData,categ })
                       required
                     />
                   </div>
-                  <div className='mb-4'>
+                  {/* <div className='mb-4'>
                     <label htmlFor='pdfFile' className='block text-sm font-medium text-gray-700'>
                       Upload File
                     </label>
@@ -150,7 +150,7 @@ const AssetModal = ({ isOpen, closeModal, onSave, formData, setFormData,categ })
                       accept='.pdf'
                       required
                     />
-                  </div>
+                  </div> */}
                   
                   <div className='flex items-center justify-end'>
                     <button
